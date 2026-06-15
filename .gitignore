@@ -3,3 +3,6 @@ dist
 .quasar
 *.local
 .DS_Store
+.nvmrc
+.yarn
+.mcp.json
