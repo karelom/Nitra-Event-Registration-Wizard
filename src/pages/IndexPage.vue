@@ -1,5 +1,5 @@
 <script setup>
-import RegistrationWizard from 'src/components/RegistrationWizard.vue'
+import RegistrationWizard from 'src/components/RegistrationWizard/RegistrationWizard.vue'
 </script>
 
 <template>

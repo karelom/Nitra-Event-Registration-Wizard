@@ -2,11 +2,11 @@
 import { ref, computed, onMounted } from 'vue'
 import type { QStepper } from 'quasar'
 import { fetchEvent } from 'src/api/event'
-import Step1AttendeeInfo from 'src/components/steps/Step1AttendeeInfo.vue'
-import Step2SessionSelection from 'src/components/steps/Step2SessionSelection.vue'
-import Step3Addons from 'src/components/steps/Step3Addons.vue'
-import Step4Review from 'src/components/steps/Step4Review.vue'
-import SuccessState from 'src/components/SuccessState.vue'
+import Step1AttendeeInfo from 'src/components/RegistrationWizard/steps/Step1AttendeeInfo.vue'
+import Step2SessionSelection from 'src/components/RegistrationWizard/steps/Step2SessionSelection.vue'
+import Step3Addons from 'src/components/RegistrationWizard/steps/Step3Addons.vue'
+import Step4Review from 'src/components/RegistrationWizard/steps/Step4Review.vue'
+import SuccessState from 'src/components/shared/SuccessState.vue'
 
 const STEP = {
   ATTENDEE_INFO: 'step1',
