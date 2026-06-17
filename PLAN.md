@@ -4,11 +4,14 @@
 
 | Date       | Duration | Activity                                                                                                                          |
 | ---------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-06-15 | ~2h      | Forked repo to personal GitHub; set up dev environment (Node 22.17.0 via nvm, Yarn 4.6.0 via Corepack); configured Figma MCP integration for design reference |
+| 2026-06-15 | ~2h  | Forked repo to personal GitHub; set up dev environment (Node 22.17.0 via nvm, Yarn 4.6.0 via Corepack); configured Figma MCP integration for design reference |
+| 2026-06-17 | ~0.5h | Built main wizard structure (`RegistrationWizard.vue`, step stubs, `registration.ts` store); added TypeScript support (`typescript`, `tsconfig.json`, `shims-vue.d.ts`); adopted `as const` enum pattern for step names |
 
 ## Dependencies
 
-No additional dependencies added yet beyond the project scaffold. Each new dependency introduced during implementation will be listed here with a short justification.
+| Package | Version | Type | Justification |
+| ------- | ------- | ---- | ------------- |
+| `typescript` | `^6.0.3` | devDependency | Type safety for all new source files; enables `as const` enums, typed reactive state, and typed component props/emits |
 
 ## AI Usage Notes
 

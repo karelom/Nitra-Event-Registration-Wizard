@@ -16,6 +16,7 @@
     "@quasar/app-vite": "2.2.1",
     "@quasar/cli": "2.4.0",
     "sass-embedded": "1.92.0",
+    "typescript": "^6.0.3",
     "unocss": "66.3.3"
   },
   "engines": {

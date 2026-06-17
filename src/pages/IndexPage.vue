@@ -1,14 +1,21 @@
 <script setup>
-// Your implementation starts here
+import RegistrationWizard from 'src/components/RegistrationWizard.vue'
 </script>
 
 <template>
-  <q-layout>
+  <q-layout view="hHh lpR fFf">
     <q-page-container>
-      <q-page padding>
-        <h1 class="text-h3 text-neutral q-mb-md">Event Registration Wizard</h1>
-        <p class="text-neutral-muted">Start building your registration wizard here.</p>
+      <q-page class="bg-surface-l1 flex flex-center">
+        <div class="wizard-container full-width q-pa-lg">
+          <RegistrationWizard />
+        </div>
       </q-page>
     </q-page-container>
   </q-layout>
 </template>
+
+<style scoped>
+.wizard-container {
+  max-width: 800px;
+}
+</style>
