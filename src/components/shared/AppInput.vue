@@ -1,11 +1,11 @@
 <script setup lang="ts">
-interface Props {
+interface AppInputProps {
   label?: string
   placeholder?: string
   type?: string
 }
 
-withDefaults(defineProps<Props>(), { type: 'text' })
+withDefaults(defineProps<AppInputProps>(), { type: 'text' })
 
 /** Bidirectional binding for the input value. */
 const model = defineModel<string>({ default: '' })
