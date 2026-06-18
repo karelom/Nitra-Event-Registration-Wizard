@@ -2,6 +2,12 @@ import { addons } from 'src/mocks/addons.js'
 
 export type AddonCategory = 'workshop' | 'meal' | 'merchandise'
 
+export const ADDON_CATEGORY_LABELS: Record<AddonCategory, string> = {
+  workshop: 'Workshops',
+  meal: 'Meal Packages',
+  merchandise: 'Merchandise',
+}
+
 export type Addon = {
   id: string
   category: AddonCategory
