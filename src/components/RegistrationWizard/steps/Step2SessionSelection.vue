@@ -15,36 +15,36 @@ onMounted(async () => {
   loading.value = false;
 });
 
-const _activeDate = ref("");
-const activeDate = computed({
-  get: () => _activeDate.value || sessionsByDate.value.tabOptions[0]?.value || "",
-  set: (v: string) => { _activeDate.value = v; },
-});
-
-/** Groups sessions by date in one pass, producing both the Map and tab options. */
+/** Sessions grouped by YYYY-MM-DD date key. */
 const sessionsByDate = computed(() => {
   const groups = new Map<string, Session[]>();
-  const tabOptions: { value: string; label: string }[] = [];
   for (const s of sessions.value) {
     const key = s.date.slice(0, 10);
-    if (!groups.has(key)) {
-      groups.set(key, []);
-      tabOptions.push({
-        value: key,
-        label: new Date(key + "T00:00:00Z").toLocaleDateString("en-US", {
-          month: "short",
-          day: "numeric",
-          timeZone: "UTC",
-        }),
-      });
-    }
+    if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(s);
   }
-  return { groups, tabOptions };
+  return groups;
 });
 
-const activeSessions = computed(
-  () => sessionsByDate.value.groups.get(activeDate.value) ?? [],
+const tabOptions = computed(() =>
+  [...sessionsByDate.value.keys()].map((key) => ({
+    value: key,
+    label: new Date(key + "T00:00:00Z").toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }),
+  })),
+);
+
+const _activeTab = ref("");
+const activeTab = computed({
+  get: () => _activeTab.value || tabOptions.value[0]?.value || "",
+  set: (v: string) => { _activeTab.value = v; },
+});
+
+const activeItems = computed(
+  () => sessionsByDate.value.get(activeTab.value) ?? [],
 );
 
 const selectedCount = computed(() => registration.selectedSessionIds.length);
@@ -85,7 +85,7 @@ function toggleSession(id: string): void {
 
     <template v-else>
       <!-- Date tabs -->
-      <AppTabs :options="sessionsByDate.tabOptions" v-model="activeDate" />
+      <AppTabs :options="tabOptions" v-model="activeTab" />
 
       <!-- Selected count -->
       <span v-if="selectedCount > 0" class="text-xs font-medium text-brand">
@@ -95,7 +95,7 @@ function toggleSession(id: string): void {
       <!-- Session grid -->
       <div class="grid grid-cols-2 gap-4">
         <SessionCard
-          v-for="session in activeSessions"
+          v-for="session in activeItems"
           :key="session.id"
           :session="session"
           :selected="isSelected(session.id)"

@@ -31,34 +31,34 @@ onMounted(async () => {
   loading.value = false;
 });
 
-/** Groups addons by category in one pass, producing both the Map and tab options. */
+/** Addons grouped by category. */
 const addonsByCategory = computed(() => {
   const groups = new Map<string, Addon[]>();
-  const tabOptions: { value: string; label: string }[] = [];
   for (const a of addons.value) {
-    if (!groups.has(a.category)) {
-      groups.set(a.category, []);
-      tabOptions.push({
-        value: a.category,
-        label: ADDON_CATEGORY_LABELS[a.category] ?? a.category,
-      });
-    }
+    if (!groups.has(a.category)) groups.set(a.category, []);
     groups.get(a.category)!.push(a);
   }
-  return { groups, tabOptions };
+  return groups;
 });
 
-const _activeCategory = ref("");
-const activeCategory = computed({
-  get: () =>
-    _activeCategory.value || addonsByCategory.value.tabOptions[0]?.value || "",
+const tabOptions = computed(() =>
+  [...addonsByCategory.value.keys()].map((key) => ({
+    value: key,
+    label:
+      ADDON_CATEGORY_LABELS[key as keyof typeof ADDON_CATEGORY_LABELS] ?? key,
+  })),
+);
+
+const _activeTab = ref("");
+const activeTab = computed({
+  get: () => _activeTab.value || tabOptions.value[0]?.value || "",
   set: (v: string) => {
-    _activeCategory.value = v;
+    _activeTab.value = v;
   },
 });
 
-const activeAddons = computed(
-  () => addonsByCategory.value.groups.get(activeCategory.value) ?? [],
+const activeItems = computed(
+  () => addonsByCategory.value.get(activeTab.value) ?? [],
 );
 
 const isVip = computed(() => registration.ticketId === "vip");
@@ -168,14 +168,11 @@ const orderTotal = computed(() => {
     <div class="flex flex-col gap-6 flex-1 min-w-0">
       <h2 class="text-h3 text-neutral m-0">Select Add-ons</h2>
 
-      <AppTabs
-        :options="addonsByCategory.tabOptions"
-        v-model="activeCategory"
-      />
+      <AppTabs :options="tabOptions" v-model="activeTab" />
 
       <!-- Shipping info banner (merchandise tab) -->
       <div
-        v-if="activeAddons.some((a) => a.maxQuantity !== undefined)"
+        v-if="activeItems.some((a) => a.maxQuantity !== undefined)"
         class="flex gap-3 p-4 rounded-lg bg-info-subtle-rest border border-info-opacity"
       >
         <q-icon name="info" size="20px" class="text-info shrink-0 mt-px" />
@@ -203,7 +200,7 @@ const orderTotal = computed(() => {
       <!-- Addon cards -->
       <template v-else>
         <AddonCard
-          v-for="addon in activeAddons"
+          v-for="addon in activeItems"
           :key="addon.id"
           :addon="addon"
           :selected="isSelected(addon.id)"
