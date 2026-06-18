@@ -8,6 +8,7 @@
 | 2026-06-17 | ~0.5h    | Built main wizard structure (`RegistrationWizard.vue`, step stubs, `registration.ts` store); added TypeScript support (`typescript`, `tsconfig.json`, `shims-vue.d.ts`); adopted `as const` enum pattern for step names                                                                                                                                                                                                                                                                                                                                                   |
 | 2026-06-17 | ~1h      | Reviewed Figma (Steps 1–3) and mock data; designed Zod schema layer (`src/schemas/`); installed `zod` v4; created `Step1AttendeeInfo.ts`, `Step2SessionSelection.ts`, `Step3Addons.ts`, `index.ts` with cross-step `superRefine`; flattened registration store to match schema shape; resolved Zod v4 deprecations (`.merge()` → `.extend()`, `z.string().email()` → `z.email()`, string message params → `{ error }` objects)                                                                                                                                            |
 | 2026-06-17 | ~0.8h    | Implemented `Step1AttendeeInfo.vue` (ticket cards + attendee form); created `src/components/shared/AppInput.vue` with `defineModel`; introduced `src/api/` layer (`event.ts`, `sessions.ts`, `addons.ts`, `index.ts`) wrapping mocks as async functions; added `allowJs: true` to `tsconfig.json`; refactored `RegistrationWizard.vue` with shared header (logo + event name) and shared footer (`#navigation` slot with Back/Next/Submit); removed per-step action bars; replaced `justify-between` + empty spacer `<div v-else />` with `ml-auto` on the primary button; restructured components into `RegistrationWizard/` feature folder with `steps/` subfolder; moved `SuccessState.vue` to `shared/` |
+| 2026-06-18 | ~0.5h    | Implemented `Step2SessionSelection.vue` (date tabs, session grid, sold-out disabling, selected counter); extracted `SessionCard.vue` from grid; moved `formatTime()` and `formatTimeRange()` to `src/lib/utils.ts`; applied `<ComponentName>Props` naming convention across all components (`AppInputProps`, `SessionCardProps`) |
 
 ## Dependencies
 
@@ -103,6 +104,7 @@ src/
       steps/
         Step1AttendeeInfo.vue
         Step2SessionSelection.vue
+        SessionCard.vue          — session card (track badge, checkbox, capacity bar); <ComponentName>Props convention
         Step3Addons.vue
         Step4Review.vue
     shared/
@@ -115,6 +117,8 @@ src/
     index.ts                   — merged registrationSchema + superRefine
   stores/
     registration.ts            — useRegistration() reactive singleton
+  lib/
+    utils.ts                 — shared pure helpers: formatTime(), formatTimeRange()
   mocks/
     event.js · sessions.js · addons.js   — source data; only accessed via src/api/
 ```
