@@ -22,12 +22,19 @@ export type Addon = {
   maxQuantity?: number
 }
 
+let cached: Promise<Addon[]> | null = null
+
 /**
  * Fetch all available add-ons as a flat array.
- * Add-ons span three categories: workshop, meal, merchandise — group by `category` on the frontend.
+ * Caches the result; pass `{ refresh: true }` to force a re-fetch.
  * Replace the mock import with a real HTTP call when the backend is ready.
  */
-export async function fetchAddons(): Promise<Addon[]> {
-  await new Promise<void>((r) => setTimeout(r, 150))
-  return addons as Addon[]
+export function fetchAddons(options?: { refresh?: boolean }): Promise<Addon[]> {
+  if (!cached || options?.refresh) {
+    cached = (async () => {
+      await new Promise<void>((r) => setTimeout(r, 150))
+      return addons as Addon[]
+    })()
+  }
+  return cached
 }

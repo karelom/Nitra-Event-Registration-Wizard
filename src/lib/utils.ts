@@ -19,3 +19,24 @@ export function formatTime(iso: string): string {
 export function formatTimeRange(start: string, end: string): string {
   return `${formatTime(start)} – ${formatTime(end)}`
 }
+
+/**
+ * Formats a workshop time slot as "Nov 16, 2:00 PM – 5:00 PM".
+ * Includes the date prefix for sessions that span across days.
+ */
+export function formatWorkshopTime(start: string, end: string): string {
+  const dateStr = new Date(start).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+  return `${dateStr}, ${formatTimeRange(start, end)}`
+}
+
+/**
+ * Formats a number as USD currency string.
+ * @example formatCurrency(1234.5) // '$1,234.50'
+ */
+export function formatCurrency(amount: number): string {
+  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}

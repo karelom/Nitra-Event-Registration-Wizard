@@ -17,12 +17,19 @@ export type Session = {
   description: string
 }
 
+let cached: Promise<Session[]> | null = null
+
 /**
  * Fetch all conference sessions as a flat array.
- * Sessions are sorted by start time in the mock; group by date on the frontend.
+ * Caches the result; pass `{ refresh: true }` to force a re-fetch.
  * Replace the mock import with a real HTTP call when the backend is ready.
  */
-export async function fetchSessions(): Promise<Session[]> {
-  await new Promise<void>((r) => setTimeout(r, 150))
-  return sessions as Session[]
+export function fetchSessions(options?: { refresh?: boolean }): Promise<Session[]> {
+  if (!cached || options?.refresh) {
+    cached = (async () => {
+      await new Promise<void>((r) => setTimeout(r, 150))
+      return sessions as Session[]
+    })()
+  }
+  return cached
 }

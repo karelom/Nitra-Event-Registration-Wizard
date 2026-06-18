@@ -9,6 +9,7 @@
 | 2026-06-17 | ~1h      | Reviewed Figma (Steps 1–3) and mock data; designed Zod schema layer (`src/schemas/`); installed `zod` v4; created `Step1AttendeeInfo.ts`, `Step2SessionSelection.ts`, `Step3Addons.ts`, `index.ts` with cross-step `superRefine`; flattened registration store to match schema shape; resolved Zod v4 deprecations (`.merge()` → `.extend()`, `z.string().email()` → `z.email()`, string message params → `{ error }` objects)                                                                                                                                            |
 | 2026-06-17 | ~0.8h    | Implemented `Step1AttendeeInfo.vue` (ticket cards + attendee form); created `src/components/shared/AppInput.vue` with `defineModel`; introduced `src/api/` layer (`event.ts`, `sessions.ts`, `addons.ts`, `index.ts`) wrapping mocks as async functions; added `allowJs: true` to `tsconfig.json`; refactored `RegistrationWizard.vue` with shared header (logo + event name) and shared footer (`#navigation` slot with Back/Next/Submit); removed per-step action bars; replaced `justify-between` + empty spacer `<div v-else />` with `ml-auto` on the primary button; restructured components into `RegistrationWizard/` feature folder with `steps/` subfolder; moved `SuccessState.vue` to `shared/` |
 | 2026-06-18 | ~0.5h    | Implemented `Step2SessionSelection.vue` (date tabs, session grid, sold-out disabling, selected counter); extracted `SessionCard.vue` from grid; moved `formatTime()` and `formatTimeRange()` to `src/lib/utils.ts`; applied `<ComponentName>Props` naming convention across all components (`AppInputProps`, `SessionCardProps`) |
+| 2026-06-18 | ~1.6h   | Implemented `Step3Addons.vue` with category tabs (workshops/meals/merchandise), order summary sidebar (ticket + addons + VIP 10% discount + total), and workshop time-conflict detection (real-time computed against selected sessions); created `AddonCard.vue` — single component handling all three addon types: workshop (time range, spots, sold-out/conflict), meal (toggle), merchandise (size dropdown, quantity stepper, "max N" label, "✓ Added to order"); created `AppTabs.vue` shared tab component (used by Step2 + Step3); added `formatWorkshopTime()` and `formatCurrency()` to `src/lib/utils.ts`; added promise-based caching with `{ refresh }` option to all API functions (`fetchEvent`, `fetchSessions`, `fetchAddons`); refactored Step2 to use `AppTabs`; replaced `watch` with writable `computed` for default-tab initialization; merged per-step grouping + tab-options into single computed (`sessionsByDate`, `addonsByCategory`); derived tab options from API data (not hardcoded); documented Figma frame data in `docs/figma-data.md` to preserve API quota |
 
 ## Dependencies
 
@@ -78,7 +79,7 @@ Zod schemas split by step, file names match their corresponding component:
 | `src/schemas/Step3Addons.ts`           | `selectedAddons[]` (`id`, `category`, `size?`, `quantity`) |
 | `src/schemas/index.ts`                 | Merged schema + cross-step rules via `.superRefine()`      |
 
-**API layer pattern:** `src/api/` wraps each mock with a 150 ms simulated delay and typed return values. Components import from `src/api/` only — never from `src/mocks/` directly. Swap the mock `import` for a real `fetch` call when the backend is ready; component code is unchanged.
+**API layer pattern:** `src/api/` wraps each mock with a 150 ms simulated delay, typed return values, and **promise-based caching** (with `{ refresh: true }` to force re-fetch). Components import from `src/api/` only — never from `src/mocks/` directly. Swap the mock `import` for a real `fetch` call when the backend is ready; component code is unchanged.
 
 **Wizard layout:** `RegistrationWizard.vue` owns the page frame — header (logo + event name) and footer (`#navigation` slot with Back/Next/Submit). Step components render content only. Back button uses `v-if` (not `v-show` — `display:none` breaks flex layout); Next/Submit uses `ml-auto` rather than `justify-between` + an empty spacer element.
 
@@ -105,10 +106,12 @@ src/
         Step1AttendeeInfo.vue
         Step2SessionSelection.vue
         SessionCard.vue          — session card (track badge, checkbox, capacity bar); <ComponentName>Props convention
-        Step3Addons.vue
+        Step3Addons.vue          — category tabs, addon cards, order summary sidebar, workshop conflict detection
+        AddonCard.vue            — addon card for all categories: workshop (time/spots), meal (toggle), merchandise (size dropdown, qty stepper)
         Step4Review.vue
     shared/
       AppInput.vue             — label + input, uses defineModel<string>
+      AppTabs.vue              — reusable pill-tab bar; v-model + options[]; used by Step2 + Step3
       SuccessState.vue
   schemas/
     Step1AttendeeInfo.ts
@@ -118,7 +121,7 @@ src/
   stores/
     registration.ts            — useRegistration() reactive singleton
   lib/
-    utils.ts                 — shared pure helpers: formatTime(), formatTimeRange()
+    utils.ts                 — shared pure helpers: formatTime(), formatTimeRange(), formatWorkshopTime(), formatCurrency()
   mocks/
     event.js · sessions.js · addons.js   — source data; only accessed via src/api/
 ```

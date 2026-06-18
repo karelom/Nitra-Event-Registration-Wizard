@@ -1,5 +1,5 @@
 <script setup>
-import RegistrationWizard from 'src/components/RegistrationWizard/RegistrationWizard.vue'
+import RegistrationWizard from "src/components/RegistrationWizard/RegistrationWizard.vue";
 </script>
 
 <template>
@@ -14,8 +14,4 @@ import RegistrationWizard from 'src/components/RegistrationWizard/RegistrationWi
   </q-layout>
 </template>
 
-<style scoped>
-.wizard-container {
-  max-width: 800px;
-}
-</style>
+<style scoped></style>
