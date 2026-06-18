@@ -2,11 +2,13 @@
 import { ref, computed, onMounted } from "vue";
 import { fetchSessions } from "src/api/sessions";
 import type { Session } from "src/api/sessions";
-import { useRegistration } from "src/stores/registration";
+import { useRegistration, useValidation } from "src/stores/registration";
 import SessionCard from "src/components/RegistrationWizard/steps/SessionCard.vue";
 import AppTabs from "src/components/shared/AppTabs.vue";
 
 const registration = useRegistration();
+const { fieldError, conflictingSessionIds } = useValidation();
+
 const sessions = ref<Session[]>([]);
 const loading = ref(true);
 
@@ -15,7 +17,6 @@ onMounted(async () => {
   loading.value = false;
 });
 
-/** Sessions grouped by YYYY-MM-DD date key. */
 const sessionsByDate = computed(() => {
   const groups = new Map<string, Session[]>();
   for (const s of sessions.value) {
@@ -65,7 +66,6 @@ function toggleSession(id: string): void {
   <div class="flex flex-col gap-6 py-10 px-[120px]">
     <h2 class="text-h3 text-neutral m-0">Select Sessions</h2>
 
-    <!-- Loading skeleton -->
     <template v-if="loading">
       <div class="flex gap-1 p-1 rounded-[10px] bg-surface-l2 self-start">
         <div
@@ -84,21 +84,19 @@ function toggleSession(id: string): void {
     </template>
 
     <template v-else>
-      <!-- Date tabs -->
       <AppTabs :options="tabOptions" v-model="activeTab" />
 
-      <!-- Selected count -->
       <span v-if="selectedCount > 0" class="text-xs font-medium text-brand">
         {{ selectedCount }} session{{ selectedCount === 1 ? "" : "s" }} selected
       </span>
 
-      <!-- Session grid -->
       <div class="grid grid-cols-2 gap-4">
         <SessionCard
           v-for="session in activeItems"
           :key="session.id"
           :session="session"
           :selected="isSelected(session.id)"
+          :has-error="!!fieldError('selectedSessionIds') || conflictingSessionIds.has(session.id)"
           @toggle="toggleSession(session.id)"
         />
       </div>

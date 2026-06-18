@@ -1,39 +1,149 @@
-import { reactive } from 'vue'
-import type { AddonSelection } from 'src/schemas/Step3Addons'
+import { reactive, computed, ref } from "vue";
+import type { AddonSelection } from "src/schemas/Step3Addons";
+import type { AttendeeInfo, TicketId } from "src/schemas/Step1AttendeeInfo";
+import { TICKET_ID } from "src/schemas/Step1AttendeeInfo";
+import type { Session } from "src/api/sessions";
+import { registrationSchema } from "src/schemas";
 
-/**
- * Mutable form state used during wizard editing.
- * All text fields default to empty string; ticketId defaults to empty string
- * (treated as "not yet selected") and validated as a proper TicketId at submit time.
- */
 interface RegistrationState {
-  ticketId: string
-  fullName: string
-  email: string
-  phone: string
-  company: string
-  jobTitle: string
-  shippingAddress: string
-  selectedSessionIds: string[]
-  selectedAddons: AddonSelection[]
+  attendeeInfo: AttendeeInfo;
+  selectedSessionIds: string[];
+  selectedAddons: AddonSelection[];
 }
 
 const state = reactive<RegistrationState>({
-  ticketId: '',
-  fullName: '',
-  email: '',
-  phone: '',
-  company: '',
-  jobTitle: '',
-  shippingAddress: '',
+  attendeeInfo: {
+    ticketId: "" as TicketId,
+    fullName: "",
+    email: "",
+    phone: "",
+    company: "",
+    jobTitle: "",
+    shippingAddress: "",
+  },
   selectedSessionIds: [],
   selectedAddons: [],
-})
+});
+
+export const isVip = computed(
+  () => state.attendeeInfo.ticketId === TICKET_ID.VIP,
+);
 
 /**
  * Returns the shared reactive registration state.
  * Used across all wizard steps for cross-step data access.
  */
 export function useRegistration() {
-  return state
+  return state;
+}
+
+// ── Validation ───────────────────────────────────────────────────
+
+const _cachedSessions = ref<Session[]>([]);
+const _hasAttemptedSubmit = ref(false);
+
+const validationState = computed(() => {
+  if (!_hasAttemptedSubmit.value) {
+    return {
+      issues: [] as { message: string; path: (string | number)[] }[],
+      conflicts: [] as string[],
+      conflictIds: new Set<string>(),
+    };
+  }
+
+  const result = registrationSchema.safeParse({
+    attendeeInfo: {
+      ...state.attendeeInfo,
+      shippingAddress: state.attendeeInfo.shippingAddress || undefined,
+    },
+    selectedSessionIds: [...state.selectedSessionIds],
+    selectedAddons: state.selectedAddons.map((a) => ({
+      id: a.id,
+      category: a.category,
+      ...(a.size ? { size: a.size } : {}),
+      quantity: a.quantity,
+    })),
+  });
+
+  const issues = result.success
+    ? []
+    : result.error.issues.map((i) => ({
+        message: i.message,
+        path: i.path as (string | number)[],
+      }));
+
+  const selected = _cachedSessions.value.filter((s) =>
+    state.selectedSessionIds.includes(s.id),
+  );
+  const conflicts: string[] = [];
+  const conflictIds = new Set<string>();
+  for (let i = 0; i < selected.length; i++) {
+    for (let j = i + 1; j < selected.length; j++) {
+      const a = selected[i],
+        b = selected[j];
+      if (a.date < b.endDate && a.endDate > b.date) {
+        conflicts.push(
+          `"${a.title}" and "${b.title}" have overlapping time slots`,
+        );
+        conflictIds.add(a.id);
+        conflictIds.add(b.id);
+      }
+    }
+  }
+
+  return { issues, conflicts, conflictIds };
+});
+
+const validationErrors = computed(() => validationState.value.issues);
+const timeConflicts = computed(() => validationState.value.conflicts);
+const conflictingSessionIds = computed(() => validationState.value.conflictIds);
+
+const stepErrors = computed(() => ({
+  step1: validationErrors.value.some(
+    (e) => String(e.path?.[0]) === "attendeeInfo",
+  ),
+  step2:
+    validationErrors.value.some(
+      (e) => String(e.path?.[0]) === "selectedSessionIds",
+    ) || timeConflicts.value.length > 0,
+  step3: validationErrors.value.some(
+    (e) => String(e.path?.[0]) === "selectedAddons",
+  ),
+}));
+
+const hasValidationErrors = computed(
+  () => validationErrors.value.length > 0 || timeConflicts.value.length > 0,
+);
+
+function fieldError(...path: string[]): string | undefined {
+  return validationErrors.value.find((e) =>
+    path.every((p, i) => String(e.path?.[i]) === p),
+  )?.message;
+}
+
+function setCachedSessions(sessions: Session[]) {
+  _cachedSessions.value = sessions;
+}
+
+function attemptSubmit(): boolean {
+  _hasAttemptedSubmit.value = true;
+  return !hasValidationErrors.value;
+}
+
+/**
+ * Returns reactive validation state.
+ * Validation activates after the first `attemptSubmit()` call,
+ * then re-evaluates automatically as the registration state changes.
+ */
+export function useValidation() {
+  return {
+    validationErrors,
+    timeConflicts,
+    conflictingSessionIds,
+    stepErrors,
+    hasValidationErrors,
+    fieldError,
+    attemptSubmit,
+    setCachedSessions,
+  };
 }

@@ -11,19 +11,19 @@ const baseSchema = step1Schema
  * Full registration schema combining all steps.
  * Cross-step rules:
  *   - shippingAddress is required when any merchandise addon is selected
- * Time-conflict validation is handled separately in the submit handler
+ * Time-conflict validation is handled separately in the store
  * because it requires the sessions catalog at runtime.
  */
 export const registrationSchema = baseSchema.superRefine((data, ctx) => {
   const hasMerchandise = data.selectedAddons.some(
     (a) => a.category === 'merchandise',
   )
-  if (hasMerchandise && !data.shippingAddress?.trim()) {
+  if (hasMerchandise && !data.attendeeInfo.shippingAddress?.trim()) {
     ctx.addIssue({
       code: 'custom',
       message:
-        'Shipping address is required when merchandise is selected',
-      path: ['shippingAddress'],
+        'Shipping address is required for merchandise orders',
+      path: ['attendeeInfo', 'shippingAddress'],
     })
   }
 })

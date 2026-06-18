@@ -6,6 +6,7 @@ import { formatTimeRange } from 'src/lib/utils'
 interface SessionCardProps {
   session: Session
   selected: boolean
+  hasError?: boolean
 }
 
 const props = defineProps<SessionCardProps>()
@@ -32,9 +33,13 @@ function handleClick() {
     class="flex flex-col gap-2 p-4 rounded-[6px] border-2 transition-colors shadow-[0px_1px_3px_0px_rgba(0,0,0,0.04),0px_4px_16px_0px_rgba(0,0,0,0.08)]"
     :class="isSoldOut
       ? 'bg-surface-l2 border-neutral-muted cursor-not-allowed'
-      : selected
-        ? 'bg-brand-subtle-rest border-brand-emphasis cursor-pointer'
-        : 'bg-surface-l0 border-neutral-muted cursor-pointer hover:border-brand-muted'"
+      : selected && props.hasError
+        ? 'bg-brand-subtle-rest border-solid border-danger-emphasis cursor-pointer'
+        : selected
+          ? 'bg-brand-subtle-rest border-brand-emphasis cursor-pointer'
+          : props.hasError
+            ? 'bg-surface-l0 border-solid border-danger-emphasis cursor-pointer'
+            : 'bg-surface-l0 border-neutral-muted cursor-pointer hover:border-brand-muted'"
     @click="handleClick"
   >
     <!-- Top row: track badge + checkbox -->

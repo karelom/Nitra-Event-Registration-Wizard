@@ -1,9 +1,15 @@
 import { z } from "zod";
 
-export const TICKET_IDS = ["general", "vip", "student"] as const;
+export const TICKET_ID = {
+  GENERAL: "general",
+  VIP: "vip",
+  STUDENT: "student",
+} as const;
+
+export const TICKET_IDS = Object.values(TICKET_ID);
 export type TicketId = (typeof TICKET_IDS)[number];
 
-export const step1Schema = z.object({
+export const attendeeInfoSchema = z.object({
   ticketId: z.enum(TICKET_IDS),
   fullName: z.string().min(1, { error: "Full name is required" }),
   email: z.email({ error: "Please enter a valid email address" }),
@@ -17,4 +23,9 @@ export const step1Schema = z.object({
   shippingAddress: z.string().optional(),
 });
 
+export const step1Schema = z.object({
+  attendeeInfo: attendeeInfoSchema,
+});
+
+export type AttendeeInfo = z.infer<typeof attendeeInfoSchema>;
 export type Step1Data = z.infer<typeof step1Schema>;

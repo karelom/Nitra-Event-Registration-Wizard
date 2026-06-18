@@ -3,8 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import type { QStepper } from 'quasar'
 import { fetchEvent } from 'src/api/event'
 import { fetchSessions } from 'src/api/sessions'
-import { useRegistration } from 'src/stores/registration'
-import { registrationSchema } from 'src/schemas'
+import { useValidation } from 'src/stores/registration'
 import Step1AttendeeInfo from 'src/components/RegistrationWizard/steps/Step1AttendeeInfo.vue'
 import Step2SessionSelection from 'src/components/RegistrationWizard/steps/Step2SessionSelection.vue'
 import Step3Addons from 'src/components/RegistrationWizard/steps/Step3Addons.vue'
@@ -22,41 +21,22 @@ type StepName = typeof STEP[keyof typeof STEP]
 
 const STEP_ORDER: StepName[] = [STEP.ATTENDEE_INFO, STEP.SESSION_SELECTION, STEP.ADDONS, STEP.REVIEW]
 
-const registration = useRegistration()
+const { stepErrors, hasValidationErrors, attemptSubmit, setCachedSessions } = useValidation()
 
 const stepperRef = ref<QStepper | null>(null)
 const currentStep = ref<StepName>(STEP.ATTENDEE_INFO)
 const submitted = ref(false)
 const eventName = ref('')
 
-const validationErrors = ref<{ message: string; path: (string | number)[] }[]>([])
-const timeConflicts = ref<string[]>([])
-
-const STEP1_FIELDS = new Set(['ticketId', 'fullName', 'email', 'phone', 'company', 'jobTitle', 'shippingAddress'])
-
-const stepErrors = computed(() => ({
-  [STEP.ATTENDEE_INFO]: validationErrors.value.some((e) => STEP1_FIELDS.has(String(e.path?.[0]))),
-  [STEP.SESSION_SELECTION]: validationErrors.value.some((e) => String(e.path?.[0]) === 'selectedSessionIds') || timeConflicts.value.length > 0,
-  [STEP.ADDONS]: validationErrors.value.some((e) => String(e.path?.[0]) === 'selectedAddons'),
-}))
-
-const shippingAddressError = computed(() =>
-  validationErrors.value.find((e) => String(e.path?.[0]) === 'shippingAddress')?.message ?? '',
-)
-
-const hasValidationErrors = computed(() =>
-  validationErrors.value.length > 0 || timeConflicts.value.length > 0,
-)
-
 onMounted(async () => {
-  const ev = await fetchEvent()
+  const [ev, sess] = await Promise.all([fetchEvent(), fetchSessions()])
   eventName.value = ev.name
+  setCachedSessions(sess)
 })
 
 const stepIndex = computed(() => STEP_ORDER.indexOf(currentStep.value))
 const isFirst = computed(() => stepIndex.value === 0)
 
-/** Primary action button label, specific to each step. */
 const nextLabel = computed<string>(() => ({
   [STEP.ATTENDEE_INFO]: 'Next: Session Selection',
   [STEP.SESSION_SELECTION]: 'Next: Add-ons',
@@ -80,49 +60,8 @@ function goToStep(name: StepName) {
   currentStep.value = name
 }
 
-async function onSubmit() {
-  const result = registrationSchema.safeParse({
-    ticketId: registration.ticketId,
-    fullName: registration.fullName,
-    email: registration.email,
-    phone: registration.phone,
-    company: registration.company,
-    jobTitle: registration.jobTitle,
-    shippingAddress: registration.shippingAddress || undefined,
-    selectedSessionIds: [...registration.selectedSessionIds],
-    selectedAddons: registration.selectedAddons.map((a) => ({
-      id: a.id,
-      category: a.category,
-      ...(a.size ? { size: a.size } : {}),
-      quantity: a.quantity,
-    })),
-  })
-
-  const allSessions = await fetchSessions()
-  const selected = allSessions.filter((s) =>
-    registration.selectedSessionIds.includes(s.id),
-  )
-  const conflicts: string[] = []
-  for (let i = 0; i < selected.length; i++) {
-    for (let j = i + 1; j < selected.length; j++) {
-      const a = selected[i], b = selected[j]
-      if (a.date < b.endDate && a.endDate > b.date) {
-        conflicts.push(
-          `"${a.title}" and "${b.title}" have overlapping time slots`,
-        )
-      }
-    }
-  }
-
-  validationErrors.value = result.success
-    ? []
-    : result.error.issues.map((i) => ({
-        message: i.message,
-        path: i.path as (string | number)[],
-      }))
-  timeConflicts.value = conflicts
-
-  if (result.success && conflicts.length === 0) {
+function onSubmit() {
+  if (attemptSubmit()) {
     submitted.value = true
   }
 }
@@ -137,16 +76,14 @@ defineExpose({ goToStep })
 
     <!-- ── Header ── -->
     <header class="flex items-center gap-3 px-12 py-4 bg-surface-l0">
-      <!-- Logo -->
       <div class="w-10 h-10 rounded-[8px] bg-brand-emphasis-rest flex items-center justify-center shrink-0">
         <span class="text-inverse text-sm font-bold leading-none">N</span>
       </div>
-      <!-- Event name — non-breaking space keeps height stable while loading -->
       <span class="text-h4 text-neutral">{{ eventName }}&nbsp;</span>
     </header>
     <div class="h-px bg-black/10" />
 
-    <!-- ── Stepper (progress indicator + step content) ── -->
+    <!-- ── Stepper ── -->
     <q-stepper
       ref="stepperRef"
       v-model="currentStep"
@@ -158,18 +95,18 @@ defineExpose({ goToStep })
         :name="STEP.ATTENDEE_INFO"
         title="Attendee Info"
         icon="person"
-        :done="isDone(STEP.ATTENDEE_INFO)"
-        :error="stepErrors[STEP.ATTENDEE_INFO]"
+        :done="isDone(STEP.ATTENDEE_INFO) && !stepErrors.step1"
+        :error="stepErrors.step1"
       >
-        <Step1AttendeeInfo :shipping-error="shippingAddressError" />
+        <Step1AttendeeInfo />
       </q-step>
 
       <q-step
         :name="STEP.SESSION_SELECTION"
         title="Sessions"
         icon="event"
-        :done="isDone(STEP.SESSION_SELECTION)"
-        :error="stepErrors[STEP.SESSION_SELECTION]"
+        :done="isDone(STEP.SESSION_SELECTION) && !stepErrors.step2"
+        :error="stepErrors.step2"
       >
         <Step2SessionSelection />
       </q-step>
@@ -178,8 +115,8 @@ defineExpose({ goToStep })
         :name="STEP.ADDONS"
         title="Add-ons"
         icon="card_giftcard"
-        :done="isDone(STEP.ADDONS)"
-        :error="stepErrors[STEP.ADDONS]"
+        :done="isDone(STEP.ADDONS) && !stepErrors.step3"
+        :error="stepErrors.step3"
       >
         <Step3Addons />
       </q-step>
@@ -190,14 +127,10 @@ defineExpose({ goToStep })
         icon="check_circle"
         :done="isDone(STEP.REVIEW)"
       >
-        <Step4Review
-          :errors="validationErrors"
-          :time-conflicts="timeConflicts"
-          @edit-step="goToStep($event as StepName)"
-        />
+        <Step4Review @edit-step="goToStep($event as StepName)" />
       </q-step>
 
-      <!-- ── Shared footer: Back + primary action ── -->
+      <!-- ── Shared footer ── -->
       <template #navigation>
         <div class="h-px bg-black/10" />
         <div class="flex items-center px-[120px] py-4 bg-surface-l0">

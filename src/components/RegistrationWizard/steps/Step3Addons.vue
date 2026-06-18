@@ -8,7 +8,7 @@ import type { Addon } from "src/api/addons";
 import type { Session } from "src/api/sessions";
 import type { TicketType } from "src/api/event";
 import type { AddonSelection } from "src/schemas/Step3Addons";
-import { useRegistration } from "src/stores/registration";
+import { useRegistration, isVip } from "src/stores/registration";
 import AppTabs from "src/components/shared/AppTabs.vue";
 import AddonCard from "src/components/RegistrationWizard/steps/AddonCard.vue";
 import { formatCurrency } from "src/lib/utils";
@@ -60,8 +60,6 @@ const activeTab = computed({
 const activeItems = computed(
   () => addonsByCategory.value.get(activeTab.value) ?? [],
 );
-
-const isVip = computed(() => registration.ticketId === "vip");
 
 const selectedSessions = computed(() =>
   sessions.value.filter((s) => registration.selectedSessionIds.includes(s.id)),
@@ -134,7 +132,7 @@ function setQuantity(id: string, qty: number): void {
 // ── Order summary ─────────────────────────────────────────────────
 
 const currentTicket = computed(() =>
-  ticketTypes.value.find((t) => t.id === registration.ticketId),
+  ticketTypes.value.find((t) => t.id === registration.attendeeInfo.ticketId),
 );
 
 const selectedAddonDetails = computed(() =>
@@ -172,7 +170,11 @@ const orderTotal = computed(() => {
 
       <!-- Shipping info banner (merchandise tab) -->
       <div
-        v-if="selectedAddonDetails.some(({ addon }) => addon.maxQuantity !== undefined)"
+        v-if="
+          selectedAddonDetails.some(
+            ({ addon }) => addon.maxQuantity !== undefined,
+          )
+        "
         class="flex gap-3 p-4 rounded-lg bg-info-subtle-rest border border-info-opacity"
       >
         <q-icon name="info" size="20px" class="text-info shrink-0 mt-px" />

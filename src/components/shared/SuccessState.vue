@@ -26,9 +26,9 @@ function handleBackToHome() {
     </p>
 
     <p class="text-xs text-neutral-muted text-center max-w-md m-0 leading-4">
-      Thank you, {{ registration.fullName }}! Your
-      {{ registration.ticketId.toUpperCase() }} registration is confirmed.<br />
-      You will receive a confirmation email at {{ registration.email }}.
+      Thank you, {{ registration.attendeeInfo.fullName }}! Your
+      {{ registration.attendeeInfo.ticketId.toUpperCase() }} registration is confirmed.<br />
+      You will receive a confirmation email at {{ registration.attendeeInfo.email }}.
     </p>
 
     <q-btn

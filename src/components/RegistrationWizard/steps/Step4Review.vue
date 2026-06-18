@@ -6,26 +6,16 @@ import { fetchAddons, ADDON_CATEGORY_LABELS } from "src/api/addons";
 import type { TicketType } from "src/api/event";
 import type { Session } from "src/api/sessions";
 import type { Addon } from "src/api/addons";
-import { useRegistration } from "src/stores/registration";
+import { useRegistration, useValidation, isVip } from "src/stores/registration";
 import { formatCurrency, formatTime } from "src/lib/utils";
-
-interface ValidationIssue {
-  message: string;
-  path: (string | number)[];
-}
-
-interface Step4ReviewProps {
-  errors: ValidationIssue[];
-  timeConflicts: string[];
-}
-
-const props = defineProps<Step4ReviewProps>();
 
 defineEmits<{
   "edit-step": [step: string];
 }>();
 
 const registration = useRegistration();
+const { validationErrors, timeConflicts, stepErrors, fieldError } =
+  useValidation();
 const ticketTypes = ref<TicketType[]>([]);
 const sessions = ref<Session[]>([]);
 const addons = ref<Addon[]>([]);
@@ -44,27 +34,25 @@ onMounted(async () => {
 });
 
 const currentTicket = computed(() =>
-  ticketTypes.value.find((t) => t.id === registration.ticketId),
+  ticketTypes.value.find((t) => t.id === registration.attendeeInfo.ticketId),
 );
 
 const selectedSessions = computed(() =>
-  sessions.value.filter((s) =>
-    registration.selectedSessionIds.includes(s.id),
-  ),
+  sessions.value.filter((s) => registration.selectedSessionIds.includes(s.id)),
 );
 
 const selectedAddonDetails = computed(() =>
   registration.selectedAddons
     .map((sel) => ({ sel, addon: addons.value.find((a) => a.id === sel.id) }))
     .filter(
-      (item): item is {
+      (
+        item,
+      ): item is {
         sel: (typeof registration.selectedAddons)[number];
         addon: Addon;
       } => !!item.addon,
     ),
 );
-
-const isVip = computed(() => registration.ticketId === "vip");
 
 const timedAddonDiscount = computed(() => {
   if (!isVip.value) return 0;
@@ -84,49 +72,34 @@ const orderTotal = computed(() => {
 
 // ── Error helpers ────────────────────────────────────────────────
 
-const STEP1_FIELDS = new Set([
-  "ticketId",
-  "fullName",
-  "email",
-  "phone",
-  "company",
-  "jobTitle",
-  "shippingAddress",
-]);
-
-const step1Errors = computed(() =>
-  props.errors.filter((e) => STEP1_FIELDS.has(String(e.path?.[0]))),
-);
-
-const step2Errors = computed(() => [
-  ...props.errors.filter(
-    (e) => String(e.path?.[0]) === "selectedSessionIds",
-  ),
-  ...props.timeConflicts.map((msg) => ({
-    message: msg,
-    path: ["selectedSessionIds"] as (string | number)[],
-  })),
-]);
-
-const step3Errors = computed(() =>
-  props.errors.filter((e) => String(e.path?.[0]) === "selectedAddons"),
-);
-
-function fieldHasError(fieldName: string): boolean {
-  return props.errors.some((e) => String(e.path?.[0]) === fieldName);
+function fieldHasError(...path: string[]): boolean {
+  return !!fieldError(...path);
 }
 
-function formatBannerError(issue: ValidationIssue): string {
-  const field = String(issue.path?.[0]);
-  if (STEP1_FIELDS.has(field)) return `Step 1: ${issue.message}`;
-  if (field === "selectedSessionIds") return `Step 2: ${issue.message}`;
-  if (field === "selectedAddons") return `Step 3: ${issue.message}`;
+const step2ErrorMessages = computed(() => [
+  ...validationErrors.value
+    .filter((e) => String(e.path?.[0]) === "selectedSessionIds")
+    .map((e) => e.message),
+  ...timeConflicts.value,
+]);
+
+const step3ErrorMessages = computed(() =>
+  validationErrors.value
+    .filter((e) => String(e.path?.[0]) === "selectedAddons")
+    .map((e) => e.message),
+);
+
+function formatBannerError(issue: { message: string; path: (string | number)[] }): string {
+  const root = String(issue.path?.[0]);
+  if (root === "attendeeInfo") return `Step 1: ${issue.message}`;
+  if (root === "selectedSessionIds") return `Step 2: ${issue.message}`;
+  if (root === "selectedAddons") return `Step 3: ${issue.message}`;
   return issue.message;
 }
 
 const bannerErrors = computed(() => [
-  ...props.errors.map(formatBannerError),
-  ...props.timeConflicts.map((msg) => `Step 2: ${msg}`),
+  ...validationErrors.value.map(formatBannerError),
+  ...timeConflicts.value.map((msg: string) => `Step 2: ${msg}`),
 ]);
 
 function formatSessionDate(date: string): string {
@@ -173,16 +146,16 @@ function formatSessionDate(date: string): string {
       <section
         class="flex flex-col gap-3 p-5 rounded-[6px] bg-surface-l2"
         :class="
-          step1Errors.length
-            ? 'border-2 border-danger-emphasis'
-            : 'border border-neutral-muted'
+          stepErrors.step1
+            ? 'border-2 border-solid border-danger-emphasis'
+            : 'border border-solid border-neutral-muted'
         "
       >
         <div class="flex justify-between items-center">
           <h3
             class="text-subtitle1 m-0"
             :class="
-              step1Errors.length ? 'text-danger-emphasis' : 'text-neutral'
+              stepErrors.step1 ? 'text-danger-emphasis' : 'text-neutral'
             "
           >
             Attendee Information
@@ -200,14 +173,14 @@ function formatSessionDate(date: string): string {
           <span
             class="text-xs leading-4"
             :class="
-              !registration.fullName && fieldHasError('fullName')
+              fieldHasError('attendeeInfo', 'fullName')
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
             {{
-              registration.fullName ||
-              (fieldHasError("fullName") ? "— (required)" : "—")
+              registration.attendeeInfo.fullName ||
+              (fieldHasError("attendeeInfo", "fullName") ? "— (required)" : "—")
             }}
           </span>
         </div>
@@ -216,14 +189,14 @@ function formatSessionDate(date: string): string {
           <span
             class="text-xs leading-4"
             :class="
-              !registration.email && fieldHasError('email')
+              fieldHasError('attendeeInfo', 'email')
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
             {{
-              registration.email ||
-              (fieldHasError("email") ? "— (required)" : "—")
+              registration.attendeeInfo.email ||
+              (fieldHasError("attendeeInfo", "email") ? "— (required)" : "—")
             }}
           </span>
         </div>
@@ -232,14 +205,14 @@ function formatSessionDate(date: string): string {
           <span
             class="text-xs leading-4"
             :class="
-              !registration.phone && fieldHasError('phone')
+              fieldHasError('attendeeInfo', 'phone')
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
             {{
-              registration.phone ||
-              (fieldHasError("phone") ? "— (required)" : "—")
+              registration.attendeeInfo.phone ||
+              (fieldHasError("attendeeInfo", "phone") ? "— (required)" : "—")
             }}
           </span>
         </div>
@@ -248,14 +221,14 @@ function formatSessionDate(date: string): string {
           <span
             class="text-xs leading-4"
             :class="
-              !registration.company && fieldHasError('company')
+              fieldHasError('attendeeInfo', 'company')
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
             {{
-              registration.company ||
-              (fieldHasError("company") ? "— (required)" : "—")
+              registration.attendeeInfo.company ||
+              (fieldHasError("attendeeInfo", "company") ? "— (required)" : "—")
             }}
           </span>
         </div>
@@ -264,33 +237,39 @@ function formatSessionDate(date: string): string {
           <span
             class="text-xs leading-4"
             :class="
-              !registration.jobTitle && fieldHasError('jobTitle')
+              fieldHasError('attendeeInfo', 'jobTitle')
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
             {{
-              registration.jobTitle ||
-              (fieldHasError("jobTitle") ? "— (required)" : "—")
+              registration.attendeeInfo.jobTitle ||
+              (fieldHasError("attendeeInfo", "jobTitle") ? "— (required)" : "—")
             }}
           </span>
         </div>
         <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4"
-            >Ticket Type</span
+          <span class="text-xs text-neutral-muted leading-4">Ticket Type</span>
+          <span
+            class="text-xs leading-4"
+            :class="
+              fieldHasError('attendeeInfo', 'ticketId')
+                ? 'text-danger-emphasis'
+                : 'text-neutral'
+            "
           >
-          <span class="text-xs text-neutral leading-4">
             {{
               currentTicket
                 ? `${currentTicket.name} (${formatCurrency(currentTicket.price)})`
-                : "—"
+                : fieldHasError("attendeeInfo", "ticketId")
+                  ? "— (required)"
+                  : "—"
             }}
           </span>
         </div>
         <div
           v-if="
-            registration.shippingAddress ||
-            fieldHasError('shippingAddress')
+            registration.attendeeInfo.shippingAddress || fieldHasError('attendeeInfo', 'shippingAddress')
           "
           class="flex justify-between"
         >
@@ -300,16 +279,12 @@ function formatSessionDate(date: string): string {
           <span
             class="text-xs leading-4"
             :class="
-              !registration.shippingAddress &&
-              fieldHasError('shippingAddress')
+              fieldHasError('attendeeInfo', 'shippingAddress')
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
-            {{
-              registration.shippingAddress ||
-              "— (required for merchandise)"
-            }}
+            {{ registration.attendeeInfo.shippingAddress || "— (required for merchandise)" }}
           </span>
         </div>
       </section>
@@ -318,16 +293,16 @@ function formatSessionDate(date: string): string {
       <section
         class="flex flex-col gap-3 p-5 rounded-[6px] bg-surface-l2"
         :class="
-          step2Errors.length
-            ? 'border-2 border-danger-emphasis'
-            : 'border border-neutral-muted'
+          stepErrors.step2
+            ? 'border-2 border-solid border-danger-emphasis'
+            : 'border border-solid border-neutral-muted'
         "
       >
         <div class="flex justify-between items-center">
           <h3
             class="text-subtitle1 m-0"
             :class="
-              step2Errors.length ? 'text-danger-emphasis' : 'text-neutral'
+              stepErrors.step2 ? 'text-danger-emphasis' : 'text-neutral'
             "
           >
             Selected Sessions
@@ -359,13 +334,13 @@ function formatSessionDate(date: string): string {
           No sessions selected
         </p>
 
-        <div v-if="step2Errors.length" class="flex flex-col gap-1">
+        <div v-if="step2ErrorMessages.length" class="flex flex-col gap-1">
           <p
-            v-for="(err, i) in step2Errors"
+            v-for="(msg, i) in step2ErrorMessages"
             :key="i"
             class="text-xs text-danger-emphasis m-0"
           >
-            &bull; {{ err.message }}
+            &bull; {{ msg }}
           </p>
         </div>
       </section>
@@ -374,16 +349,16 @@ function formatSessionDate(date: string): string {
       <section
         class="flex flex-col gap-3 p-5 rounded-[6px] bg-surface-l2"
         :class="
-          step3Errors.length
-            ? 'border-2 border-danger-emphasis'
-            : 'border border-neutral-muted'
+          stepErrors.step3
+            ? 'border-2 border-solid border-danger-emphasis'
+            : 'border border-solid border-neutral-muted'
         "
       >
         <div class="flex justify-between items-center">
           <h3
             class="text-subtitle1 m-0"
             :class="
-              step3Errors.length ? 'text-danger-emphasis' : 'text-neutral'
+              stepErrors.step3 ? 'text-danger-emphasis' : 'text-neutral'
             "
           >
             Add-ons
@@ -418,13 +393,13 @@ function formatSessionDate(date: string): string {
           No add-ons selected
         </p>
 
-        <div v-if="step3Errors.length" class="flex flex-col gap-1">
+        <div v-if="step3ErrorMessages.length" class="flex flex-col gap-1">
           <p
-            v-for="(err, i) in step3Errors"
+            v-for="(msg, i) in step3ErrorMessages"
             :key="i"
             class="text-xs text-danger-emphasis m-0"
           >
-            &bull; {{ err.message }}
+            &bull; {{ msg }}
           </p>
         </div>
       </section>
@@ -451,9 +426,7 @@ function formatSessionDate(date: string): string {
         >
           <span class="text-xs text-neutral-muted leading-4">
             {{ addon.name
-            }}{{
-              addon.maxQuantity !== undefined ? ` × ${sel.quantity}` : ""
-            }}
+            }}{{ addon.maxQuantity !== undefined ? ` × ${sel.quantity}` : "" }}
           </span>
           <span class="text-xs text-neutral-muted leading-4">{{
             formatCurrency(addon.price * sel.quantity)

@@ -1,7 +1,8 @@
 import { event } from 'src/mocks/event.js'
+import type { TicketId } from 'src/schemas/Step1AttendeeInfo'
 
 export type TicketType = {
-  id: 'general' | 'vip' | 'student'
+  id: TicketId
   name: string
   price: number
   description: string
