@@ -172,7 +172,7 @@ const orderTotal = computed(() => {
 
       <!-- Shipping info banner (merchandise tab) -->
       <div
-        v-if="activeItems.some((a) => a.maxQuantity !== undefined)"
+        v-if="selectedAddonDetails.some(({ addon }) => addon.maxQuantity !== undefined)"
         class="flex gap-3 p-4 rounded-lg bg-info-subtle-rest border border-info-opacity"
       >
         <q-icon name="info" size="20px" class="text-info shrink-0 mt-px" />
