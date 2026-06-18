@@ -5,6 +5,12 @@ import type { TicketType } from 'src/api/event'
 import { useRegistration } from 'src/stores/registration'
 import AppInput from 'src/components/shared/AppInput.vue'
 
+interface Step1AttendeeInfoProps {
+  shippingError?: string
+}
+
+const props = defineProps<Step1AttendeeInfoProps>()
+
 const registration = useRegistration()
 const ticketTypes = ref<TicketType[]>([])
 const loading = ref(true)
@@ -18,6 +24,14 @@ onMounted(async () => {
 /** The currently selected ticket, or null if none chosen yet. */
 const selectedTicket = computed(() =>
   ticketTypes.value.find((t) => t.id === registration.ticketId) ?? null
+)
+
+const hasMerchandise = computed(() =>
+  registration.selectedAddons.some((a) => a.category === "merchandise"),
+)
+
+const shippingLabel = computed(() =>
+  hasMerchandise.value ? "Shipping Address *" : "Shipping Address (Optional)",
 )
 </script>
 
@@ -129,8 +143,9 @@ const selectedTicket = computed(() =>
         <div class="flex gap-6">
           <AppInput
             v-model="registration.shippingAddress"
-            label="Shipping Address (Optional)"
+            :label="shippingLabel"
             placeholder="Enter your shipping address"
+            :error="props.shippingError"
           />
         </div>
       </div>
