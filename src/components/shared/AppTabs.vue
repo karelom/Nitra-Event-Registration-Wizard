@@ -12,7 +12,7 @@ const model = defineModel<string>({ default: '' })
     <button
       v-for="opt in options"
       :key="opt.value"
-      class="px-5 py-2 rounded-[8px] text-sm font-semibold transition-colors border-none cursor-pointer"
+      class="px-5 py-2 rounded-lg text-sm font-semibold transition-colors border-none cursor-pointer"
       :class="model === opt.value
         ? 'bg-brand-emphasis-rest text-inverse'
         : 'bg-transparent text-neutral-muted'"

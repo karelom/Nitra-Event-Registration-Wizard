@@ -85,7 +85,7 @@ defineExpose({ goToStep });
     <!-- ── Header ── -->
     <header class="flex items-center gap-3 px-12 py-4 bg-surface-l0">
       <div
-        class="w-10 h-10 rounded-[8px] bg-brand-emphasis-rest flex items-center justify-center shrink-0"
+        class="w-10 h-10 rounded-lg bg-brand-emphasis-rest flex items-center justify-center shrink-0"
       >
         <span class="text-inverse text-sm font-bold leading-none">N</span>
       </div>

@@ -30,7 +30,7 @@ function handleClick() {
 
 <template>
   <div
-    class="flex flex-col gap-2 p-4 rounded-[6px] border-2 transition-colors shadow-[0px_1px_3px_0px_rgba(0,0,0,0.04),0px_4px_16px_0px_rgba(0,0,0,0.08)]"
+    class="flex flex-col gap-2 p-4 rounded-md border-2 transition-colors shadow-[0px_1px_3px_0px_rgba(0,0,0,0.04),0px_4px_16px_0px_rgba(0,0,0,0.08)]"
     :class="isSoldOut
       ? 'bg-surface-l2 border-solid border-neutral-muted cursor-not-allowed'
       : selected && props.hasError

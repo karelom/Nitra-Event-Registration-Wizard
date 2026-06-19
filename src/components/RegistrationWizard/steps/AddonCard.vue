@@ -34,7 +34,7 @@ const canIncrement = computed(() =>
 )
 
 const cardClass = computed(() => {
-  const radius = hasControls.value ? 'rounded-lg' : 'rounded-[6px]'
+  const radius = hasControls.value ? 'rounded-lg' : 'rounded-md'
   const borderWidth = hasControls.value ? 'border' : 'border-2'
 
   if (isDisabled.value) {
@@ -121,7 +121,7 @@ function onSizeChange(event: Event) {
           <div class="relative">
             <select
               :value="size || ''"
-              class="appearance-none pl-3 pr-7 py-1.5 rounded-[6px] bg-surface-l0 border border-solid border-neutral-muted text-xs cursor-pointer outline-none"
+              class="appearance-none pl-3 pr-7 py-1.5 rounded-md bg-surface-l0 border border-solid border-neutral-muted text-xs cursor-pointer outline-none"
               :class="size ? 'text-neutral' : 'text-neutral-quiet'"
               @change="onSizeChange"
             >
@@ -136,7 +136,7 @@ function onSizeChange(event: Event) {
         <div class="flex items-center gap-2">
           <span class="text-xs font-medium text-neutral-muted">Qty:</span>
           <button
-            class="w-7 h-7 flex items-center justify-center rounded-[6px] bg-surface-l2 border-none transition-opacity text-sm leading-none"
+            class="w-7 h-7 flex items-center justify-center rounded-md bg-surface-l2 border-none transition-opacity text-sm leading-none"
             :class="canDecrement ? 'cursor-pointer text-neutral' : 'opacity-40 cursor-not-allowed text-neutral-disabled'"
             @click="decrement"
           >
@@ -144,7 +144,7 @@ function onSizeChange(event: Event) {
           </button>
           <span class="w-6 text-center text-sm font-semibold text-neutral leading-[14px]">{{ quantity }}</span>
           <button
-            class="w-7 h-7 flex items-center justify-center rounded-[6px] bg-surface-l2 border-none transition-opacity text-sm leading-none"
+            class="w-7 h-7 flex items-center justify-center rounded-md bg-surface-l2 border-none transition-opacity text-sm leading-none"
             :class="canIncrement ? 'cursor-pointer text-neutral' : 'opacity-40 cursor-not-allowed text-neutral-disabled'"
             @click="increment"
           >

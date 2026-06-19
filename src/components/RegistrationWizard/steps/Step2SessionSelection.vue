@@ -71,14 +71,14 @@ function toggleSession(id: string): void {
         <div
           v-for="n in 2"
           :key="n"
-          class="w-24 h-8 rounded-[8px] bg-surface-l3 animate-pulse"
+          class="w-24 h-8 rounded-lg bg-surface-l3 animate-pulse"
         />
       </div>
       <div class="grid grid-cols-2 gap-4">
         <div
           v-for="n in 6"
           :key="n"
-          class="h-44 rounded-[6px] bg-surface-l2 animate-pulse"
+          class="h-44 rounded-md bg-surface-l2 animate-pulse"
         />
       </div>
     </template>

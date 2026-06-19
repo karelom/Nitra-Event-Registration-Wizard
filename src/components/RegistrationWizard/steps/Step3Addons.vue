@@ -195,7 +195,7 @@ const orderTotal = computed(() => {
         <div
           v-for="n in 3"
           :key="n"
-          class="h-32 rounded-[6px] bg-surface-l2 animate-pulse"
+          class="h-32 rounded-md bg-surface-l2 animate-pulse"
         />
       </template>
 
@@ -219,7 +219,7 @@ const orderTotal = computed(() => {
     <!-- ── Order Summary sidebar ── -->
     <div class="w-[380px] shrink-0 self-start sticky top-8">
       <div
-        class="flex flex-col gap-4 p-6 rounded-[6px] bg-surface-l2 border border-solid border-neutral-muted"
+        class="flex flex-col gap-4 p-6 rounded-md bg-surface-l2 border border-solid border-neutral-muted"
       >
         <p class="text-subtitle1 m-0 text-neutral">Order Summary</p>
 

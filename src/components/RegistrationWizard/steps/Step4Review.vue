@@ -116,7 +116,7 @@ function formatSessionDate(date: string): string {
     <!-- ── Error banner ── -->
     <div
       v-if="bannerErrors.length"
-      class="flex flex-col gap-2 p-4 rounded-[6px] bg-danger-subtle-rest border border-danger-muted"
+      class="flex flex-col gap-2 p-4 rounded-md bg-danger-subtle-rest border border-danger-muted"
     >
       <span class="text-xs font-medium text-danger-emphasis leading-4">
         Please fix the following errors before submitting
@@ -137,14 +137,14 @@ function formatSessionDate(date: string): string {
       <div
         v-for="n in 4"
         :key="n"
-        class="h-40 rounded-[6px] bg-surface-l2 animate-pulse"
+        class="h-40 rounded-md bg-surface-l2 animate-pulse"
       />
     </template>
 
     <template v-else>
       <!-- ── Attendee Information ── -->
       <section
-        class="flex flex-col gap-3 p-5 rounded-[6px] bg-surface-l2"
+        class="flex flex-col gap-3 p-5 rounded-md bg-surface-l2"
         :class="
           stepErrors.step1
             ? 'border-2 border-solid border-danger-emphasis'
@@ -291,7 +291,7 @@ function formatSessionDate(date: string): string {
 
       <!-- ── Selected Sessions ── -->
       <section
-        class="flex flex-col gap-3 p-5 rounded-[6px] bg-surface-l2"
+        class="flex flex-col gap-3 p-5 rounded-md bg-surface-l2"
         :class="
           stepErrors.step2
             ? 'border-2 border-solid border-danger-emphasis'
@@ -347,7 +347,7 @@ function formatSessionDate(date: string): string {
 
       <!-- ── Add-ons ── -->
       <section
-        class="flex flex-col gap-3 p-5 rounded-[6px] bg-surface-l2"
+        class="flex flex-col gap-3 p-5 rounded-md bg-surface-l2"
         :class="
           stepErrors.step3
             ? 'border-2 border-solid border-danger-emphasis'
@@ -406,7 +406,7 @@ function formatSessionDate(date: string): string {
 
       <!-- ── Pricing Summary ── -->
       <section
-        class="flex flex-col gap-2 p-5 rounded-[6px] border border-solid border-neutral-muted bg-surface-l2"
+        class="flex flex-col gap-2 p-5 rounded-md border border-solid border-neutral-muted bg-surface-l2"
       >
         <h3 class="text-subtitle1 text-neutral m-0">Pricing Summary</h3>
 

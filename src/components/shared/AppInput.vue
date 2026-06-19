@@ -25,7 +25,7 @@ const model = defineModel<string>({ default: "" });
       v-model="model"
       :type="type"
       :placeholder="placeholder"
-      class="w-full px-3 py-2 text-base font-regular bg-surface-l0 rounded-[6px] text-neutral placeholder:text-neutral-quiet leading-6 focus:outline-none transition-colors border-solid"
+      class="w-full px-3 py-2 text-base font-regular bg-surface-l0 rounded-md text-neutral placeholder:text-neutral-quiet leading-6 focus:outline-none transition-colors border-solid"
       :class="
         props.error
           ? 'border border-danger-emphasis'

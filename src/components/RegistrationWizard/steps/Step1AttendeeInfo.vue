@@ -41,7 +41,7 @@ const shippingLabel = computed(() =>
         <div
           v-for="n in 3"
           :key="n"
-          class="flex-1 h-48 rounded-[6px] bg-surface-l2 animate-pulse"
+          class="flex-1 h-48 rounded-md bg-surface-l2 animate-pulse"
         />
       </div>
 
@@ -49,7 +49,7 @@ const shippingLabel = computed(() =>
         <div
           v-for="ticket in ticketTypes"
           :key="ticket.id"
-          class="flex-1 flex flex-col gap-3 p-5 rounded-[6px] border-2 cursor-pointer transition-colors shadow-[0px_1px_3px_0px_rgba(0,0,0,0.04),0px_4px_16px_0px_rgba(0,0,0,0.08)]"
+          class="flex-1 flex flex-col gap-3 p-5 rounded-md border-2 cursor-pointer transition-colors shadow-[0px_1px_3px_0px_rgba(0,0,0,0.04),0px_4px_16px_0px_rgba(0,0,0,0.08)]"
           :class="selectedTicket?.id === ticket.id
             ? 'bg-brand-subtle-rest border-solid border-brand-emphasis'
             : fieldError('attendeeInfo', 'ticketId')
