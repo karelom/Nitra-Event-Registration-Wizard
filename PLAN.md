@@ -23,14 +23,76 @@
 | `typescript` | `^6.0.3` | devDependency | Type safety for all new source files; enables `as const` enums, typed reactive state, and typed component props/emits                                                                                                                                                         |
 | `zod`        | `^4.4.3` | dependency    | Runtime schema validation and TypeScript type inference for all wizard steps; drives cross-step rules (shipping address conditional) via `.superRefine()`; alternative was manual validation which would require hand-writing equivalent logic with no type inference benefit |
 
-## AI Usage Notes
+## AI-Assisted Development Journey
 
-This project is being built with assistance from Claude Code (Anthropic), used for:
+This project was built with Claude Code (Anthropic's CLI agent) as a pair-programming partner throughout. Below documents the full development process, covering planning, decisions, tool usage, challenges, and retrospective.
 
-- Repository setup (remote configuration, pushing to personal GitHub)
-- Dev environment setup: installing Node `22.17.0` via nvm (matching `engines`), enabling Corepack so Yarn `4.6.0` is used per the `packageManager` field
-- Configuring a local Figma MCP integration (`figma-developer-mcp`, via `.mcp.json` + a personal access token) to read design specs, tokens, and assets directly from the provided Figma file during implementation
-- Implementation/code assistance for the registration wizard (Steps 1-4), to be detailed further as work progresses
+### How I planned and broke down the task
+
+1. **Schema-first design** — Before writing any UI, I designed Zod schemas for each step (`Step1AttendeeInfo.ts`, `Step2SessionSelection.ts`, `Step3Addons.ts`) and a merged schema with cross-step `superRefine()` rules. This gave me TypeScript types for free (`z.infer<>`) and ensured validation logic was defined before the components that depended on it.
+
+2. **Step-by-step implementation order** — Built in dependency order: store → schemas → API layer → Step1 → Step2 → Step3 → Step4 → validation wiring → UI polish → refactoring. Each step was self-contained and testable before moving to the next.
+
+3. **CLAUDE.md as a living contract** — Created project-level instructions (`CLAUDE.md`) with a Pattern Registry, logic placement rules, and naming conventions. This served as guardrails for Claude Code, ensuring every new composable, utility, or store was checked against existing implementations before creation — preventing duplicate logic across sessions.
+
+4. **Figma-driven implementation** — Used the Figma MCP integration to fetch design frame data for each step before implementing it, mapping raw fill colors and positions to the project's semantic design tokens (`src/unocss/semantic.js`).
+
+### Key decisions and why
+
+| Decision | Why | Alternative considered |
+|----------|-----|----------------------|
+| Vue `reactive()` singleton over Pinia | Single-page wizard with one shared state — Pinia's module system adds overhead with no benefit here | Pinia (`@pinia/nuxt`): would add a dependency and boilerplate for a use case that doesn't need devtools or plugin ecosystem |
+| Zod v4 for validation | Schema = single source of truth for runtime validation + TypeScript types; `superRefine()` handles cross-step rules (shipping address, session conflicts) cleanly | Manual validation: would require hand-writing the same rules + separate TypeScript interfaces with no inference |
+| Deferred validation (submit-time only) | Matches the Figma design — no per-step blocking; users can freely navigate back/forward. Real-time inline errors activate only after first submit attempt, then update reactively | Per-step validation gates: would block navigation and add complexity for a UX the design doesn't call for |
+| Category-agnostic `AddonCard` | Renders based on field presence (`date`/`endDate` for time slots, `capacity` for availability, `maxQuantity` for qty controls) rather than category string checks — extensible without touching the component if new addon types share the same fields | Separate components per category: more components, more duplication, harder to maintain |
+| `as const` enum pattern | `const TICKET_ID = { GENERAL: 'general', VIP: 'vip' } as const` — tree-shakeable, no runtime enum object, works naturally with Zod's `z.enum()` | Native TypeScript `enum`: generates runtime code, doesn't tree-shake, awkward with Zod |
+| CSS-only fixed header/footer | Keeps the Quasar `QStepper` DOM structure intact; only adds flex + overflow CSS via `:deep()` scoped styles | Restructuring the stepper DOM: would fight Quasar's internal `hMergeSlot` rendering and require maintaining custom stepper logic |
+| `src/api/` abstraction layer | Wraps mocks with async interface + promise caching; when a real backend is ready, swap the mock import — components are unchanged | Direct mock imports in components: couples UI to data source, makes migration to real API a multi-file change |
+
+### How I used AI tools
+
+**Tool:** Claude Code (Anthropic CLI) with Figma MCP server integration
+
+**Workflow pattern:**
+- Described desired behavior in natural language (often with screenshots for UI work) → Claude proposed implementation → iterative refinement via corrections and follow-up instructions
+- Used Claude's `/plan` mode for complex tasks (fixed header/footer layout, codebase refactoring) to align on approach before writing code
+- Used `CLAUDE.md` to persist project conventions across sessions so Claude maintained consistency without re-explaining rules
+
+**Figma MCP integration:**
+- Configured `figma-developer-mcp` server via `.mcp.json` with a personal access token
+- Fetched 7 design frames via Figma REST API to extract colors, spacing, and layout specs
+- **Quota management:** Free plan allows ~6 API fetches/month, so all fetched frame data was documented in `docs/figma-data.md` to avoid re-fetching. Claude was instructed to warn and confirm before any Figma fetch.
+
+**What worked well:**
+- **Reading Quasar source code** (`node_modules/quasar/src/components/stepper/`) to understand internal DOM structure — this let us solve the fixed header/footer layout with CSS only, without fighting the framework
+- **Schema-first design** with Claude — defining validation schemas before UI ensured type safety flowed naturally through the whole codebase
+- **Systematic codebase-wide changes** — Claude's ability to grep across all files and apply consistent patterns (e.g., adding `border-solid` to every card/input, renaming rounded values) made global polish efficient
+- **Refactoring with confidence** — Claude reviewed the entire codebase, identified 6 duplication patterns, and extracted shared utilities/composables in one pass with TypeScript verification
+
+**What didn't work well:**
+- **Misdiagnosed input border issue** — Claude initially assumed a gradient border was caused by an undefined CSS variable; the user corrected that it was actually the browser's default `border-style: inset`. Required user domain knowledge to fix.
+- **Empty stepper dots** — After removing the `icon` prop from `q-step`, Claude didn't know that Quasar doesn't auto-number steps. Needed to read Quasar's `StepHeader.js` source to discover the `prefix` prop.
+- **Figma data mapping** — Raw Figma API returns fill colors as RGBA and positions as absolute coordinates, not semantic tokens. Manual mapping to the project's UnoCSS semantic tokens was required for every frame.
+
+### Challenges encountered and how they were solved
+
+| Challenge | How it was solved |
+|-----------|-------------------|
+| **Zod v4 breaking changes** — `.merge()` removed, `z.string().email()` → `z.email()`, string message params → `{ error }` objects | Read Zod v4 migration notes; updated all schema files to use `.extend()`, new API |
+| **Quasar `#navigation` slot renders as siblings** — `hMergeSlot(slots.navigation, getContent())` merges footer at the stepper root, not inside `.q-stepper__content` | Read `QStepper.js` source; confirmed footer is a flex sibling → CSS-only solution works (footer stays fixed naturally) |
+| **Browser default `border-style: inset`** on `<input>` and `<select>` elements — creates darker top/left edges that look like a gradient | Added `border-solid` class to all input and card elements globally |
+| **Quasar step dots empty after removing `icon` prop** — Quasar doesn't auto-number steps | Read `StepHeader.js` source, found `prefix` prop (line 48: `hasPrefix` computed); added `prefix="1"` through `prefix="4"` |
+| **Flexbox `min-height: auto`** — flex children don't shrink below content size by default, preventing scroll containment | Applied `min-h-0` on flex containers + `overflow-y: auto` on the content area |
+| **Duplicated business logic across Step3 and Step4** — order calculations (ticket price, addon totals, VIP discount) maintained in two places | Extracted `useOrderSummary()` composable during refactoring pass |
+
+### What I would improve given more time
+
+- **Mock server with MSW** — Replace `setTimeout(150)` wrappers with Mock Service Worker for realistic network simulation, request/response inspection, and error scenario testing
+- **Custom stepper header** — Replace Quasar's default step progress bar with the Figma design (custom component with numbered circles and connecting lines)
+- **Unit tests** — Test Zod schemas (valid/invalid inputs, cross-step rules), composables (`useOrderSummary`, `useDefaultTab`), and utility functions (`hasTimeOverlap`, `groupBy`, `formatCurrency`)
+- **Accessibility** — ARIA labels on interactive elements, keyboard navigation for cards and tabs, focus management on step transitions, screen reader announcements for validation errors
+- **Responsive design** — Current layout assumes desktop viewport; would add breakpoints for tablet/mobile (stack sidebar below content, single-column session grid, full-width cards)
+- **E2E tests** — Cypress or Playwright tests covering the full wizard flow: happy path, validation errors, edge cases (sold-out sessions, time conflicts, empty addons)
 
 ## Design Reference
 
