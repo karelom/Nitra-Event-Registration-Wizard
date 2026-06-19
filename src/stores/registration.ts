@@ -3,6 +3,7 @@ import type { AddonSelection } from "src/schemas/Step3Addons";
 import type { AttendeeInfo, TicketId } from "src/schemas/Step1AttendeeInfo";
 import { TICKET_ID } from "src/schemas/Step1AttendeeInfo";
 import type { Session } from "src/api/sessions";
+import type { Addon } from "src/api/addons";
 import { registrationSchema } from "src/schemas";
 import { hasTimeOverlap } from "src/lib/utils";
 
@@ -30,6 +31,28 @@ export const isVip = computed(
   () => state.attendeeInfo.ticketId === TICKET_ID.VIP,
 );
 
+/** Toggles a session and removes any workshop addons that now conflict. */
+function toggleSession(id: string): void {
+  const ids = state.selectedSessionIds;
+  const idx = ids.indexOf(id);
+  if (idx >= 0) {
+    ids.splice(idx, 1);
+    return;
+  }
+
+  ids.push(id);
+
+  if (!_cachedSessions.value.length || !_cachedAddons.value.length) return;
+  const selectedSess = _cachedSessions.value.filter((s) => ids.includes(s.id));
+  for (let i = state.selectedAddons.length - 1; i >= 0; i--) {
+    const addon = _cachedAddons.value.find((a) => a.id === state.selectedAddons[i].id);
+    if (!addon?.date || !addon?.endDate) continue;
+    if (selectedSess.some((s) => hasTimeOverlap(addon as { date: string; endDate: string }, s))) {
+      state.selectedAddons.splice(i, 1);
+    }
+  }
+}
+
 /**
  * Returns the shared reactive registration state.
  * Used across all wizard steps for cross-step data access.
@@ -38,9 +61,12 @@ export function useRegistration() {
   return state;
 }
 
+export { toggleSession };
+
 // ── Validation ───────────────────────────────────────────────────
 
 const _cachedSessions = ref<Session[]>([]);
+const _cachedAddons = ref<Addon[]>([]);
 const _hasAttemptedSubmit = ref(false);
 
 const validationState = computed(() => {
@@ -126,6 +152,10 @@ function setCachedSessions(sessions: Session[]) {
   _cachedSessions.value = sessions;
 }
 
+function setCachedAddons(addons: Addon[]) {
+  _cachedAddons.value = addons;
+}
+
 function attemptSubmit(): boolean {
   _hasAttemptedSubmit.value = true;
   return !hasValidationErrors.value;
@@ -146,5 +176,6 @@ export function useValidation() {
     fieldError,
     attemptSubmit,
     setCachedSessions,
+    setCachedAddons,
   };
 }

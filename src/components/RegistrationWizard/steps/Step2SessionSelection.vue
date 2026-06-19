@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from "vue";
 import { fetchSessions } from "src/api/sessions";
 import type { Session } from "src/api/sessions";
-import { useRegistration, useValidation } from "src/stores/registration";
+import { useRegistration, useValidation, toggleSession } from "src/stores/registration";
 import { useDefaultTab } from "src/composables/useDefaultTab";
 import SessionCard from "src/components/RegistrationWizard/steps/SessionCard.vue";
 import AppTabs from "src/components/shared/AppTabs.vue";
@@ -46,12 +46,7 @@ function isSelected(id: string): boolean {
   return registration.selectedSessionIds.includes(id);
 }
 
-function toggleSession(id: string): void {
-  const ids = registration.selectedSessionIds;
-  const idx = ids.indexOf(id);
-  if (idx >= 0) ids.splice(idx, 1);
-  else ids.push(id);
-}
+
 </script>
 
 <template>

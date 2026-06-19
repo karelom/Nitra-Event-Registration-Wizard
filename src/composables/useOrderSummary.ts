@@ -4,7 +4,7 @@ import { fetchAddons } from 'src/api/addons'
 import type { TicketType } from 'src/api/event'
 import type { Addon } from 'src/api/addons'
 import type { AddonSelection } from 'src/schemas/Step3Addons'
-import { useRegistration, isVip } from 'src/stores/registration'
+import { useRegistration, isVip, useValidation } from 'src/stores/registration'
 
 /**
  * Shared order summary calculations used by Step3 (sidebar) and Step4 (pricing review).
@@ -12,6 +12,7 @@ import { useRegistration, isVip } from 'src/stores/registration'
  */
 export function useOrderSummary() {
   const registration = useRegistration()
+  const { setCachedAddons } = useValidation()
 
   const ticketTypes = ref<TicketType[]>([])
   const addons = ref<Addon[]>([])
@@ -21,6 +22,7 @@ export function useOrderSummary() {
     const [ev, adds] = await Promise.all([fetchEvent(), fetchAddons()])
     ticketTypes.value = ev.ticketTypes
     addons.value = adds
+    setCachedAddons(adds)
     loading.value = false
   })
 
