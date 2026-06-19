@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { fetchEvent } from "src/api/event";
 import { fetchSessions } from "src/api/sessions";
-import { fetchAddons, ADDON_CATEGORY_LABELS } from "src/api/addons";
-import type { TicketType } from "src/api/event";
+import { ADDON_CATEGORY_LABELS } from "src/api/addons";
 import type { Session } from "src/api/sessions";
-import type { Addon } from "src/api/addons";
-import { useRegistration, useValidation, isVip } from "src/stores/registration";
+import { useRegistration, useValidation } from "src/stores/registration";
+import { useOrderSummary } from "src/composables/useOrderSummary";
 import { formatCurrency, formatTime } from "src/lib/utils";
 
 defineEmits<{
@@ -16,59 +14,17 @@ defineEmits<{
 const registration = useRegistration();
 const { validationErrors, timeConflicts, stepErrors, fieldError } =
   useValidation();
-const ticketTypes = ref<TicketType[]>([]);
+const { loading, currentTicket, selectedAddonDetails, timedAddonDiscount, orderTotal } = useOrderSummary();
+
 const sessions = ref<Session[]>([]);
-const addons = ref<Addon[]>([]);
-const loading = ref(true);
 
 onMounted(async () => {
-  const [ev, sess, adds] = await Promise.all([
-    fetchEvent(),
-    fetchSessions(),
-    fetchAddons(),
-  ]);
-  ticketTypes.value = ev.ticketTypes;
-  sessions.value = sess;
-  addons.value = adds;
-  loading.value = false;
+  sessions.value = await fetchSessions();
 });
-
-const currentTicket = computed(() =>
-  ticketTypes.value.find((t) => t.id === registration.attendeeInfo.ticketId),
-);
 
 const selectedSessions = computed(() =>
   sessions.value.filter((s) => registration.selectedSessionIds.includes(s.id)),
 );
-
-const selectedAddonDetails = computed(() =>
-  registration.selectedAddons
-    .map((sel) => ({ sel, addon: addons.value.find((a) => a.id === sel.id) }))
-    .filter(
-      (
-        item,
-      ): item is {
-        sel: (typeof registration.selectedAddons)[number];
-        addon: Addon;
-      } => !!item.addon,
-    ),
-);
-
-const timedAddonDiscount = computed(() => {
-  if (!isVip.value) return 0;
-  return selectedAddonDetails.value
-    .filter(({ addon }) => addon.date && addon.endDate)
-    .reduce((sum, { addon, sel }) => sum + addon.price * sel.quantity * 0.1, 0);
-});
-
-const orderTotal = computed(() => {
-  const ticketPrice = currentTicket.value?.price ?? 0;
-  const addonsTotal = selectedAddonDetails.value.reduce(
-    (sum, { addon, sel }) => sum + addon.price * sel.quantity,
-    0,
-  );
-  return ticketPrice + addonsTotal - timedAddonDiscount.value;
-});
 
 // ── Error helpers ────────────────────────────────────────────────
 

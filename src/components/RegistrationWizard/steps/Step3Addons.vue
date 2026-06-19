@@ -1,45 +1,30 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from "vue";
 import { fetchSessions } from "src/api/sessions";
-import { fetchAddons } from "src/api/addons";
-import { fetchEvent } from "src/api/event";
 import { ADDON_CATEGORY_LABELS } from "src/api/addons";
 import type { Addon } from "src/api/addons";
 import type { Session } from "src/api/sessions";
-import type { TicketType } from "src/api/event";
 import type { AddonSelection } from "src/schemas/Step3Addons";
-import { useRegistration, isVip } from "src/stores/registration";
+import { useRegistration } from "src/stores/registration";
+import { useOrderSummary } from "src/composables/useOrderSummary";
+import { useDefaultTab } from "src/composables/useDefaultTab";
 import AppTabs from "src/components/shared/AppTabs.vue";
 import AddonCard from "src/components/RegistrationWizard/steps/AddonCard.vue";
-import { formatCurrency } from "src/lib/utils";
+import { formatCurrency, hasTimeOverlap, groupBy } from "src/lib/utils";
 
 const registration = useRegistration();
+const { addons, loading, currentTicket, selectedAddonDetails, timedAddonDiscount, orderTotal } = useOrderSummary();
+
 const sessions = ref<Session[]>([]);
-const addons = ref<Addon[]>([]);
-const ticketTypes = ref<TicketType[]>([]);
-const loading = ref(true);
 
 onMounted(async () => {
-  const [sess, adds, ev] = await Promise.all([
-    fetchSessions(),
-    fetchAddons(),
-    fetchEvent(),
-  ]);
-  sessions.value = sess;
-  addons.value = adds;
-  ticketTypes.value = ev.ticketTypes;
-  loading.value = false;
+  sessions.value = await fetchSessions();
 });
 
 /** Addons grouped by category. */
-const addonsByCategory = computed(() => {
-  const groups = new Map<string, Addon[]>();
-  for (const a of addons.value) {
-    if (!groups.has(a.category)) groups.set(a.category, []);
-    groups.get(a.category)!.push(a);
-  }
-  return groups;
-});
+const addonsByCategory = computed(() =>
+  groupBy(addons.value, (a) => a.category),
+);
 
 const tabOptions = computed(() =>
   [...addonsByCategory.value.keys()].map((key) => ({
@@ -133,35 +118,7 @@ function setQuantity(id: string, qty: number): void {
   }
 }
 
-// ── Order summary ─────────────────────────────────────────────────
 
-const currentTicket = computed(() =>
-  ticketTypes.value.find((t) => t.id === registration.attendeeInfo.ticketId),
-);
-
-const selectedAddonDetails = computed(() =>
-  registration.selectedAddons
-    .map((sel) => ({ sel, addon: addons.value.find((a) => a.id === sel.id) }))
-    .filter(
-      (item): item is { sel: AddonSelection; addon: Addon } => !!item.addon,
-    ),
-);
-
-const timedAddonDiscount = computed(() => {
-  if (!isVip.value) return 0;
-  return selectedAddonDetails.value
-    .filter(({ addon }) => addon.date && addon.endDate)
-    .reduce((sum, { addon, sel }) => sum + addon.price * sel.quantity * 0.1, 0);
-});
-
-const orderTotal = computed(() => {
-  const ticketPrice = currentTicket.value?.price ?? 0;
-  const addonsTotal = selectedAddonDetails.value.reduce(
-    (sum, { addon, sel }) => sum + addon.price * sel.quantity,
-    0,
-  );
-  return ticketPrice + addonsTotal - timedAddonDiscount.value;
-});
 </script>
 
 <template>
