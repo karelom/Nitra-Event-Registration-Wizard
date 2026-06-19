@@ -40,3 +40,15 @@ export function formatWorkshopTime(start: string, end: string): string {
 export function formatCurrency(amount: number): string {
   return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
+
+/**
+ * Returns true if two ISO 8601 time slots overlap.
+ * @example hasTimeOverlap({ date: '2028-11-15T09:00:00Z', endDate: '2028-11-15T10:00:00Z' }, { date: '2028-11-15T09:30:00Z', endDate: '2028-11-15T11:00:00Z' }) // true
+ */
+export function hasTimeOverlap(
+  a: { date: string; endDate: string },
+  b: { date: string; endDate: string },
+): boolean {
+  return a.date < b.endDate && a.endDate > b.date
+}
+

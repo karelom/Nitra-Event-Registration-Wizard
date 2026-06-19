@@ -57,8 +57,8 @@ const selectedSessions = computed(() =>
 /** True if this timed addon's slot overlaps any selected session. */
 function hasConflict(addon: Addon): boolean {
   if (!addon.date || !addon.endDate) return false;
-  return selectedSessions.value.some(
-    (s) => addon.date! < s.endDate && addon.endDate! > s.date,
+  return selectedSessions.value.some((s) =>
+    hasTimeOverlap(addon as { date: string; endDate: string }, s),
   );
 }
 

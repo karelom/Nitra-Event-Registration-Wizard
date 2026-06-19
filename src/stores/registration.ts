@@ -4,6 +4,7 @@ import type { AttendeeInfo, TicketId } from "src/schemas/Step1AttendeeInfo";
 import { TICKET_ID } from "src/schemas/Step1AttendeeInfo";
 import type { Session } from "src/api/sessions";
 import { registrationSchema } from "src/schemas";
+import { hasTimeOverlap } from "src/lib/utils";
 
 interface RegistrationState {
   attendeeInfo: AttendeeInfo;
@@ -81,7 +82,7 @@ const validationState = computed(() => {
     for (let j = i + 1; j < selected.length; j++) {
       const a = selected[i],
         b = selected[j];
-      if (a.date < b.endDate && a.endDate > b.date) {
+      if (hasTimeOverlap(a, b)) {
         conflicts.push(
           `"${a.title}" and "${b.title}" have overlapping time slots`,
         );
