@@ -104,7 +104,7 @@ defineExpose({ goToStep });
       <q-step
         :name="STEP.ATTENDEE_INFO"
         title="Attendee Info"
-        icon="person"
+        prefix="1"
         error-icon="error"
         :done="isDone(STEP.ATTENDEE_INFO)"
         :error="stepErrors.step1"
@@ -115,7 +115,7 @@ defineExpose({ goToStep });
       <q-step
         :name="STEP.SESSION_SELECTION"
         title="Sessions"
-        icon="event"
+        prefix="2"
         error-icon="error"
         :done="isDone(STEP.SESSION_SELECTION)"
         :error="stepErrors.step2"
@@ -126,7 +126,7 @@ defineExpose({ goToStep });
       <q-step
         :name="STEP.ADDONS"
         title="Add-ons"
-        icon="card_giftcard"
+        prefix="3"
         error-icon="error"
         :done="isDone(STEP.ADDONS)"
         :error="stepErrors.step3"
@@ -137,7 +137,7 @@ defineExpose({ goToStep });
       <q-step
         :name="STEP.REVIEW"
         title="Review"
-        icon="check_circle"
+        prefix="4"
         :done="isDone(STEP.REVIEW)"
       >
         <Step4Review @edit-step="goToStep($event as StepName)" />
