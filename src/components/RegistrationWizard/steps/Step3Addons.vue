@@ -5,7 +5,7 @@ import { ADDON_CATEGORY_LABELS } from "src/api/addons";
 import type { Addon } from "src/api/addons";
 import type { Session } from "src/api/sessions";
 import type { AddonSelection } from "src/schemas/Step3Addons";
-import { useRegistration } from "src/stores/registration";
+import { useRegistration, useValidation } from "src/stores/registration";
 import { useOrderSummary } from "src/composables/useOrderSummary";
 import { useDefaultTab } from "src/composables/useDefaultTab";
 import AppTabs from "src/components/shared/AppTabs.vue";
@@ -13,6 +13,7 @@ import AddonCard from "src/components/RegistrationWizard/steps/AddonCard.vue";
 import { formatCurrency, hasTimeOverlap, groupBy } from "src/lib/utils";
 
 const registration = useRegistration();
+const { fieldError } = useValidation();
 const { addons, loading, currentTicket, selectedAddonDetails, timedAddonDiscount, orderTotal } = useOrderSummary();
 
 const sessions = ref<Session[]>([]);
@@ -70,6 +71,10 @@ function getSize(id: string): string {
   return getSelection(id)?.size ?? "";
 }
 
+function hasSizeError(addon: Addon): boolean {
+  return !!fieldError("selectedAddons") && isSelected(addon.id) && !!addon.sizes?.length && !getSize(addon.id);
+}
+
 function getQuantity(id: string): number {
   return getSelection(id)?.quantity ?? 0;
 }
@@ -89,7 +94,18 @@ function toggleAddon(addon: Addon): void {
 
 function setSize(id: string, size: string): void {
   const sel = getSelection(id);
-  if (sel) sel.size = size;
+  if (sel) {
+    sel.size = size;
+  } else {
+    const addon = addons.value.find((a) => a.id === id);
+    if (addon)
+      registration.selectedAddons.push({
+        id,
+        category: addon.category,
+        size,
+        quantity: 1,
+      });
+  }
 }
 
 function setQuantity(id: string, qty: number): void {
@@ -160,6 +176,7 @@ function setQuantity(id: string, qty: number): void {
           :size="getSize(addon.id)"
           :quantity="getQuantity(addon.id)"
           :is-conflict="hasConflict(addon)"
+          :size-error="hasSizeError(addon)"
           @toggle="toggleAddon(addon)"
           @update:size="setSize(addon.id, $event)"
           @update:quantity="setQuantity(addon.id, $event)"

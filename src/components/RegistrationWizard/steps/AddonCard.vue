@@ -9,6 +9,7 @@ interface AddonCardProps {
   size: string
   quantity: number
   isConflict: boolean
+  sizeError: boolean
 }
 
 const props = defineProps<AddonCardProps>()
@@ -121,8 +122,11 @@ function onSizeChange(event: Event) {
           <div class="relative">
             <select
               :value="size || ''"
-              class="appearance-none pl-3 pr-7 py-1.5 rounded-md bg-surface-l0 border border-solid border-neutral-muted text-xs cursor-pointer outline-none"
-              :class="size ? 'text-neutral' : 'text-neutral-quiet'"
+              class="appearance-none pl-3 pr-7 py-1.5 rounded-md bg-surface-l0 border border-solid text-xs cursor-pointer outline-none"
+              :class="[
+                size ? 'text-neutral' : 'text-neutral-quiet',
+                props.sizeError ? 'border-danger-emphasis' : 'border-neutral-muted',
+              ]"
               @change="onSizeChange"
             >
               <option value="" disabled>Select</option>

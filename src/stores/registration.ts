@@ -118,6 +118,16 @@ const validationState = computed(() => {
     }
   }
 
+  for (const sel of state.selectedAddons) {
+    const addon = _cachedAddons.value.find((a) => a.id === sel.id);
+    if (addon?.sizes?.length && !sel.size) {
+      issues.push({
+        message: `Please select a size for ${addon.name}`,
+        path: ["selectedAddons"],
+      });
+    }
+  }
+
   return { issues, conflicts, conflictIds };
 });
 
