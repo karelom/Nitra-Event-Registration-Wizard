@@ -52,3 +52,19 @@ export function hasTimeOverlap(
   return a.date < b.endDate && a.endDate > b.date
 }
 
+/**
+ * Groups array items into a Map keyed by the result of `keyFn`.
+ * Preserves insertion order of first-seen keys.
+ */
+export function groupBy<T>(
+  items: T[],
+  keyFn: (item: T) => string,
+): Map<string, T[]> {
+  const groups = new Map<string, T[]>();
+  for (const item of items) {
+    const key = keyFn(item);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(item);
+  }
+  return groups;
+}

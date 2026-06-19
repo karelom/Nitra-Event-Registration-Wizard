@@ -5,6 +5,7 @@ import type { Session } from "src/api/sessions";
 import { useRegistration, useValidation } from "src/stores/registration";
 import SessionCard from "src/components/RegistrationWizard/steps/SessionCard.vue";
 import AppTabs from "src/components/shared/AppTabs.vue";
+import { groupBy } from "src/lib/utils";
 
 const registration = useRegistration();
 const { fieldError, conflictingSessionIds } = useValidation();
@@ -17,15 +18,9 @@ onMounted(async () => {
   loading.value = false;
 });
 
-const sessionsByDate = computed(() => {
-  const groups = new Map<string, Session[]>();
-  for (const s of sessions.value) {
-    const key = s.date.slice(0, 10);
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(s);
-  }
-  return groups;
-});
+const sessionsByDate = computed(() =>
+  groupBy(sessions.value, (s) => s.date.slice(0, 10)),
+);
 
 const tabOptions = computed(() =>
   [...sessionsByDate.value.keys()].map((key) => ({
