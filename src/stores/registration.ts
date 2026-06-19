@@ -142,20 +142,24 @@ const hasValidationErrors = computed(
   () => validationErrors.value.length > 0 || timeConflicts.value.length > 0,
 );
 
+/** Returns the first validation error message matching the given path segments, or undefined. */
 function fieldError(...path: string[]): string | undefined {
   return validationErrors.value.find((e) =>
     path.every((p, i) => String(e.path?.[i]) === p),
   )?.message;
 }
 
+/** Caches the sessions catalog for time-conflict detection during validation. */
 function setCachedSessions(sessions: Session[]) {
   _cachedSessions.value = sessions;
 }
 
+/** Caches the addons catalog for workshop conflict auto-removal on session toggle. */
 function setCachedAddons(addons: Addon[]) {
   _cachedAddons.value = addons;
 }
 
+/** Activates validation and returns true if the form is valid. */
 function attemptSubmit(): boolean {
   _hasAttemptedSubmit.value = true;
   return !hasValidationErrors.value;
