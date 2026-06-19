@@ -65,6 +65,14 @@ function formatSessionDate(date: string): string {
     timeZone: "UTC",
   });
 }
+
+const attendeeFields = computed(() => [
+  { label: "Name", field: "fullName" as const, value: registration.attendeeInfo.fullName },
+  { label: "Email", field: "email" as const, value: registration.attendeeInfo.email },
+  { label: "Phone", field: "phone" as const, value: registration.attendeeInfo.phone },
+  { label: "Company", field: "company" as const, value: registration.attendeeInfo.company },
+  { label: "Job Title", field: "jobTitle" as const, value: registration.attendeeInfo.jobTitle },
+]);
 </script>
 
 <template>
@@ -124,83 +132,23 @@ function formatSessionDate(date: string): string {
           </button>
         </div>
 
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Name</span>
+        <div
+          v-for="{ label, field, value } in attendeeFields"
+          :key="field"
+          class="flex justify-between"
+        >
+          <span class="text-xs text-neutral-muted leading-4">{{ label }}</span>
           <span
             class="text-xs leading-4"
             :class="
-              fieldHasError('attendeeInfo', 'fullName')
+              fieldHasError('attendeeInfo', field)
                 ? 'text-danger-emphasis'
                 : 'text-neutral'
             "
           >
             {{
-              registration.attendeeInfo.fullName ||
-              (fieldHasError("attendeeInfo", "fullName") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Email</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'email')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.email ||
-              (fieldHasError("attendeeInfo", "email") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Phone</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'phone')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.phone ||
-              (fieldHasError("attendeeInfo", "phone") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Company</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'company')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.company ||
-              (fieldHasError("attendeeInfo", "company") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Job Title</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'jobTitle')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.jobTitle ||
-              (fieldHasError("attendeeInfo", "jobTitle") ? "— (required)" : "—")
+              value ||
+              (fieldHasError("attendeeInfo", field) ? "— (required)" : "—")
             }}
           </span>
         </div>
