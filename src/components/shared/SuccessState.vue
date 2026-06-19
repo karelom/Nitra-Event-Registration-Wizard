@@ -10,7 +10,7 @@ function handleBackToHome() {
 
 <template>
   <div
-    class="flex flex-col items-center justify-center flex-1 gap-4 px-8 py-[60px]"
+    class="flex flex-col items-center justify-center flex-1 gap-4 px-4 sm:px-8 py-8 sm:py-[60px]"
   >
     <!-- Success icon -->
     <div

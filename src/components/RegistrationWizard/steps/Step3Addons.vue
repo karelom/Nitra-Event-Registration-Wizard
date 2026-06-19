@@ -132,7 +132,7 @@ function setQuantity(id: string, qty: number): void {
 </script>
 
 <template>
-  <div class="flex gap-8 py-10 px-[120px]">
+  <div class="flex flex-col md:flex-row gap-6 md:gap-8 py-10 px-4 sm:px-8 md:px-[120px]">
     <!-- ── Add-ons list ── -->
     <div class="flex flex-col gap-6 flex-1 min-w-0">
       <h2 class="text-h3 text-neutral m-0">Select Add-ons</h2>
@@ -185,7 +185,7 @@ function setQuantity(id: string, qty: number): void {
     </div>
 
     <!-- ── Order Summary sidebar ── -->
-    <div class="w-[380px] shrink-0 self-start sticky top-8">
+    <div class="w-full md:w-[380px] md:shrink-0 md:self-start md:sticky md:top-8">
       <div
         class="flex flex-col gap-4 p-6 rounded-md bg-surface-l2 border border-solid border-neutral-muted"
       >

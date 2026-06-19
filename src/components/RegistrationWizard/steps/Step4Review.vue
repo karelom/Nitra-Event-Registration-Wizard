@@ -76,7 +76,7 @@ const attendeeFields = computed(() => [
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 py-10 px-[120px]">
+  <div class="flex flex-col gap-6 py-10 px-4 sm:px-8 md:px-[120px]">
     <!-- ── Error banner ── -->
     <div
       v-if="bannerErrors.length"

@@ -50,7 +50,7 @@ function isSelected(id: string): boolean {
 </script>
 
 <template>
-  <div class="flex flex-col gap-6 py-10 px-[120px]">
+  <div class="flex flex-col gap-6 py-10 px-4 sm:px-8 md:px-[120px]">
     <h2 class="text-h3 text-neutral m-0">Select Sessions</h2>
 
     <template v-if="loading">
@@ -61,7 +61,7 @@ function isSelected(id: string): boolean {
           class="w-24 h-8 rounded-lg bg-surface-l3 animate-pulse"
         />
       </div>
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div
           v-for="n in 6"
           :key="n"
@@ -77,7 +77,7 @@ function isSelected(id: string): boolean {
         {{ selectedCount }} session{{ selectedCount === 1 ? "" : "s" }} selected
       </span>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <SessionCard
           v-for="session in activeItems"
           :key="session.id"

@@ -31,13 +31,13 @@ const shippingLabel = computed(() =>
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 py-10 px-[120px]">
+  <div class="flex flex-col gap-8 py-10 px-4 sm:px-8 md:px-[120px]">
 
     <!-- Ticket Type -->
     <section class="flex flex-col gap-4">
       <h2 class="text-subtitle1 text-neutral m-0">Select Ticket Type</h2>
 
-      <div v-if="loading" class="flex gap-4">
+      <div v-if="loading" class="flex flex-col sm:flex-row gap-4">
         <div
           v-for="n in 3"
           :key="n"
@@ -45,7 +45,7 @@ const shippingLabel = computed(() =>
         />
       </div>
 
-      <div v-else class="flex gap-4">
+      <div v-else class="flex flex-col sm:flex-row gap-4">
         <div
           v-for="ticket in ticketTypes"
           :key="ticket.id"
@@ -90,7 +90,7 @@ const shippingLabel = computed(() =>
       <h3 class="text-h3 text-neutral m-0">Attendee Information</h3>
 
       <div class="flex flex-col gap-5">
-        <div class="flex gap-6">
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <AppInput
             v-model="registration.attendeeInfo.fullName"
             label="Full Name"
@@ -106,7 +106,7 @@ const shippingLabel = computed(() =>
           />
         </div>
 
-        <div class="flex gap-6">
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <AppInput
             v-model="registration.attendeeInfo.phone"
             label="Phone"
@@ -122,7 +122,7 @@ const shippingLabel = computed(() =>
           />
         </div>
 
-        <div class="flex gap-6">
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <AppInput
             v-model="registration.attendeeInfo.jobTitle"
             label="Job Title"
@@ -131,7 +131,7 @@ const shippingLabel = computed(() =>
           />
         </div>
 
-        <div class="flex gap-6">
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6">
           <AppInput
             v-model="registration.attendeeInfo.shippingAddress"
             :label="shippingLabel"

@@ -83,7 +83,7 @@ defineExpose({ goToStep });
 
   <div v-else class="flex flex-col h-screen overflow-hidden">
     <!-- ── Header ── -->
-    <header class="flex items-center gap-3 px-12 py-4 bg-surface-l0">
+    <header class="flex items-center gap-3 px-4 sm:px-12 py-4 bg-surface-l0">
       <div
         class="w-10 h-10 rounded-lg bg-brand-emphasis-rest flex items-center justify-center shrink-0"
       >
@@ -146,7 +146,7 @@ defineExpose({ goToStep });
       <!-- ── Shared footer ── -->
       <template #navigation>
         <div class="h-px bg-black/10" />
-        <div class="flex items-center px-[120px] py-4 bg-surface-l0">
+        <div class="flex items-center px-4 sm:px-8 md:px-[120px] py-4 bg-surface-l0">
           <q-btn
             v-if="!isFirst"
             flat
@@ -178,5 +178,15 @@ defineExpose({ goToStep });
   flex: 1;
   overflow-y: auto;
   min-height: 0;
+}
+
+:deep(.q-stepper__header) {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 639px) {
+  :deep(.q-stepper__tab:not(.q-stepper__tab--active)) {
+    display: none;
+  }
 }
 </style>
