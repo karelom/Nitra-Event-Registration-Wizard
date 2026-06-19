@@ -38,12 +38,12 @@ const cardClass = computed(() => {
   const borderWidth = hasControls.value ? 'border' : 'border-2'
 
   if (isDisabled.value) {
-    return `${radius} ${borderWidth} bg-surface-l2 border-neutral-muted cursor-not-allowed`
+    return `${radius} ${borderWidth} border-solid bg-surface-l2 border-neutral-muted cursor-not-allowed`
   }
   if (props.selected) {
-    return `${radius} ${borderWidth} bg-brand-subtle-rest border-brand-emphasis${hasControls.value ? '' : ' cursor-pointer'}`
+    return `${radius} ${borderWidth} border-solid bg-brand-subtle-rest border-brand-emphasis${hasControls.value ? '' : ' cursor-pointer'}`
   }
-  return `${radius} ${borderWidth} bg-surface-l0 border-neutral-muted${hasControls.value ? '' : ' cursor-pointer hover:border-brand-muted'}`
+  return `${radius} ${borderWidth} border-solid bg-surface-l0 border-neutral-muted${hasControls.value ? '' : ' cursor-pointer hover:border-brand-muted'}`
 })
 
 function handleCardClick() {
@@ -121,7 +121,7 @@ function onSizeChange(event: Event) {
           <div class="relative">
             <select
               :value="size || ''"
-              class="appearance-none pl-3 pr-7 py-1.5 rounded-[6px] bg-surface-l0 border border-neutral-muted text-xs cursor-pointer outline-none"
+              class="appearance-none pl-3 pr-7 py-1.5 rounded-[6px] bg-surface-l0 border border-solid border-neutral-muted text-xs cursor-pointer outline-none"
               :class="size ? 'text-neutral' : 'text-neutral-quiet'"
               @change="onSizeChange"
             >

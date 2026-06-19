@@ -406,7 +406,7 @@ function formatSessionDate(date: string): string {
 
       <!-- ── Pricing Summary ── -->
       <section
-        class="flex flex-col gap-2 p-5 rounded-[6px] border border-neutral-muted bg-surface-l2"
+        class="flex flex-col gap-2 p-5 rounded-[6px] border border-solid border-neutral-muted bg-surface-l2"
       >
         <h3 class="text-subtitle1 text-neutral m-0">Pricing Summary</h3>
 

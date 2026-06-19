@@ -32,14 +32,14 @@ function handleClick() {
   <div
     class="flex flex-col gap-2 p-4 rounded-[6px] border-2 transition-colors shadow-[0px_1px_3px_0px_rgba(0,0,0,0.04),0px_4px_16px_0px_rgba(0,0,0,0.08)]"
     :class="isSoldOut
-      ? 'bg-surface-l2 border-neutral-muted cursor-not-allowed'
+      ? 'bg-surface-l2 border-solid border-neutral-muted cursor-not-allowed'
       : selected && props.hasError
         ? 'bg-brand-subtle-rest border-solid border-danger-emphasis cursor-pointer'
         : selected
-          ? 'bg-brand-subtle-rest border-brand-emphasis cursor-pointer'
+          ? 'bg-brand-subtle-rest border-solid border-brand-emphasis cursor-pointer'
           : props.hasError
             ? 'bg-surface-l0 border-solid border-danger-emphasis cursor-pointer'
-            : 'bg-surface-l0 border-neutral-muted cursor-pointer hover:border-brand-muted'"
+            : 'bg-surface-l0 border-solid border-neutral-muted cursor-pointer hover:border-brand-muted'"
     @click="handleClick"
   >
     <!-- Top row: track badge + checkbox -->
@@ -55,7 +55,7 @@ function handleClick() {
         class="w-4 h-4 rounded-[2px] flex items-center justify-center shrink-0"
         :class="selected
           ? 'bg-brand-emphasis-rest'
-          : 'bg-surface-l0 border border-neutral-muted'"
+          : 'bg-surface-l0 border border-solid border-neutral-muted'"
       >
         <q-icon v-if="selected" name="check" size="10px" class="text-inverse" />
       </div>

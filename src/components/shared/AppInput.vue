@@ -1,15 +1,15 @@
 <script setup lang="ts">
 interface AppInputProps {
-  label?: string
-  placeholder?: string
-  type?: string
-  error?: string
+  label?: string;
+  placeholder?: string;
+  type?: string;
+  error?: string;
 }
 
-const props = withDefaults(defineProps<AppInputProps>(), { type: 'text' })
+const props = withDefaults(defineProps<AppInputProps>(), { type: "text" });
 
 /** Bidirectional binding for the input value. */
-const model = defineModel<string>({ default: '' })
+const model = defineModel<string>({ default: "" });
 </script>
 
 <template>
@@ -25,12 +25,17 @@ const model = defineModel<string>({ default: '' })
       v-model="model"
       :type="type"
       :placeholder="placeholder"
-      class="w-full px-3 py-2.5 text-base font-regular bg-surface-l0 rounded-[6px] text-neutral placeholder:text-neutral-quiet leading-6 focus:outline-none transition-colors"
-      :class="props.error
-        ? 'border border-danger-emphasis'
-        : 'border-2 border-neutral-muted focus:border-brand-emphasis'"
+      class="w-full px-3 py-2 text-base font-regular bg-surface-l0 rounded-[6px] text-neutral placeholder:text-neutral-quiet leading-6 focus:outline-none transition-colors border-solid"
+      :class="
+        props.error
+          ? 'border border-danger-emphasis'
+          : 'border border-neutral-muted focus:border-brand-emphasis'
+      "
     />
-    <span v-if="props.error" class="text-[11px] text-danger-emphasis leading-[14px]">
+    <span
+      v-if="props.error"
+      class="text-[11px] text-danger-emphasis leading-[14px]"
+    >
       {{ props.error }}
     </span>
   </div>
