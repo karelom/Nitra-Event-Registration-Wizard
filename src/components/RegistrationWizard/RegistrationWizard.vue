@@ -81,7 +81,7 @@ defineExpose({ goToStep });
 <template>
   <SuccessState v-if="submitted" />
 
-  <div v-else class="flex flex-col min-h-screen">
+  <div v-else class="flex flex-col h-screen overflow-hidden">
     <!-- ── Header ── -->
     <header class="flex items-center gap-3 px-12 py-4 bg-surface-l0">
       <div
@@ -99,7 +99,7 @@ defineExpose({ goToStep });
       v-model="currentStep"
       animated
       flat
-      class="flex-1"
+      class="flex-1 flex flex-col overflow-hidden min-h-0"
     >
       <q-step
         :name="STEP.ATTENDEE_INFO"
@@ -174,3 +174,11 @@ defineExpose({ goToStep });
     </q-stepper>
   </div>
 </template>
+
+<style scoped>
+:deep(.q-stepper__content) {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+</style>

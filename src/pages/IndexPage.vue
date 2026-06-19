@@ -6,7 +6,7 @@ import RegistrationWizard from "src/components/RegistrationWizard/RegistrationWi
   <q-layout view="hHh lpR fFf">
     <q-page-container>
       <q-page class="bg-surface-l1 flex flex-center">
-        <div class="wizard-container full-width q-pa-lg">
+        <div class="wizard-container full-width">
           <RegistrationWizard />
         </div>
       </q-page>
