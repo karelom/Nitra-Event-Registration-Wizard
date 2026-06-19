@@ -9,15 +9,19 @@ function handleBackToHome() {
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center flex-1 gap-4 px-8 py-[60px]">
+  <div
+    class="flex flex-col items-center justify-center flex-1 gap-4 px-8 py-[60px]"
+  >
     <!-- Success icon -->
     <div
-      class="w-20 h-20 rounded-full bg-[#15B471] flex items-center justify-center"
+      class="w-20 h-20 rounded-full bg-success-emphasis-rest flex items-center justify-center"
     >
       <q-icon name="check" size="36px" class="text-inverse" />
     </div>
 
-    <h1 class="text-[28px] font-bold leading-8 text-success-emphasis m-0 text-center">
+    <h1
+      class="text-h2 font-bold leading-8 text-success-emphasis m-0 text-center"
+    >
       Registration Complete!
     </h1>
 
@@ -27,8 +31,10 @@ function handleBackToHome() {
 
     <p class="text-xs text-neutral-muted text-center max-w-md m-0 leading-4">
       Thank you, {{ registration.attendeeInfo.fullName }}! Your
-      {{ registration.attendeeInfo.ticketId.toUpperCase() }} registration is confirmed.<br />
-      You will receive a confirmation email at {{ registration.attendeeInfo.email }}.
+      {{ registration.attendeeInfo.ticketId.toUpperCase() }} registration is
+      confirmed.<br />
+      You will receive a confirmation email at
+      {{ registration.attendeeInfo.email }}.
     </p>
 
     <q-btn
