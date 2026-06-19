@@ -159,13 +159,11 @@ defineExpose({ goToStep });
           <q-btn
             :label="nextLabel"
             unelevated
+            :disable="currentStep === STEP.REVIEW && hasValidationErrors"
             :padding="currentStep === STEP.REVIEW ? '12px' : '10px 16px'"
             class="ml-auto bg-accent-emphasis-rest text-inverse text-sm font-semibold"
             :class="[
               currentStep === STEP.REVIEW ? 'rounded-xl' : 'rounded-[10px]',
-              currentStep === STEP.REVIEW && hasValidationErrors
-                ? 'opacity-50'
-                : '',
             ]"
             @click="currentStep === STEP.REVIEW ? onSubmit() : goNext()"
           />
