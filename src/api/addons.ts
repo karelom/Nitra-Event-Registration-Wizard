@@ -1,4 +1,5 @@
 import { addons } from 'src/mocks/addons.js'
+import { createCachedFetcher } from 'src/lib/createCachedFetcher'
 
 export type AddonCategory = 'workshop' | 'meal' | 'merchandise'
 
@@ -28,19 +29,8 @@ export type Addon = {
   maxQuantity?: number
 }
 
-let cached: Promise<Addon[]> | null = null
-
 /**
  * Fetch all available add-ons as a flat array.
  * Caches the result; pass `{ refresh: true }` to force a re-fetch.
- * Replace the mock import with a real HTTP call when the backend is ready.
  */
-export function fetchAddons(options?: { refresh?: boolean }): Promise<Addon[]> {
-  if (!cached || options?.refresh) {
-    cached = (async () => {
-      await new Promise<void>((r) => setTimeout(r, 150))
-      return addons as Addon[]
-    })()
-  }
-  return cached
-}
+export const fetchAddons = createCachedFetcher<Addon[]>(() => addons as Addon[])
