@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import { fetchSessions } from "src/api/sessions";
 import type { Session } from "src/api/sessions";
 import { useRegistration, useValidation } from "src/stores/registration";
+import { useDefaultTab } from "src/composables/useDefaultTab";
 import SessionCard from "src/components/RegistrationWizard/steps/SessionCard.vue";
 import AppTabs from "src/components/shared/AppTabs.vue";
 import { groupBy } from "src/lib/utils";
@@ -33,11 +34,7 @@ const tabOptions = computed(() =>
   })),
 );
 
-const _activeTab = ref("");
-const activeTab = computed({
-  get: () => _activeTab.value || tabOptions.value[0]?.value || "",
-  set: (v: string) => { _activeTab.value = v; },
-});
+const activeTab = useDefaultTab(tabOptions);
 
 const activeItems = computed(
   () => sessionsByDate.value.get(activeTab.value) ?? [],

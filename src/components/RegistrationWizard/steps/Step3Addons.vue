@@ -34,13 +34,7 @@ const tabOptions = computed(() =>
   })),
 );
 
-const _activeTab = ref("");
-const activeTab = computed({
-  get: () => _activeTab.value || tabOptions.value[0]?.value || "",
-  set: (v: string) => {
-    _activeTab.value = v;
-  },
-});
+const activeTab = useDefaultTab(tabOptions);
 
 const activeItems = computed(
   () => addonsByCategory.value.get(activeTab.value) ?? [],
