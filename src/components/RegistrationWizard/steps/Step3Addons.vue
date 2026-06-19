@@ -61,6 +61,10 @@ const activeItems = computed(
   () => addonsByCategory.value.get(activeTab.value) ?? [],
 );
 
+const showShippingBanner = computed(() =>
+  activeTab.value === 'merchandise' && selectedAddonDetails.value.some(({ addon }) => addon.maxQuantity !== undefined),
+);
+
 const selectedSessions = computed(() =>
   sessions.value.filter((s) => registration.selectedSessionIds.includes(s.id)),
 );
@@ -170,11 +174,7 @@ const orderTotal = computed(() => {
 
       <!-- Shipping info banner (merchandise tab) -->
       <div
-        v-if="
-          selectedAddonDetails.some(
-            ({ addon }) => addon.maxQuantity !== undefined,
-          )
-        "
+        v-if="showShippingBanner"
         class="flex gap-3 p-4 rounded-lg bg-info-subtle-rest border border-info-opacity"
       >
         <q-icon name="info" size="20px" class="text-info shrink-0 mt-px" />
