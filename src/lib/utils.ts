@@ -1,4 +1,16 @@
 /**
+ * Formats an ISO UTC timestamp as a short date label.
+ * @example formatDate('2028-11-15T09:00:00Z') // 'Nov 15'
+ */
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+/**
  * Formats an ISO UTC timestamp to a locale time string.
  * Uses UTC timezone so output is consistent regardless of the user's locale offset.
  * @example formatTime('2028-11-15T09:00:00Z') // '9:00 AM'
@@ -25,12 +37,7 @@ export function formatTimeRange(start: string, end: string): string {
  * Includes the date prefix for sessions that span across days.
  */
 export function formatWorkshopTime(start: string, end: string): string {
-  const dateStr = new Date(start).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    timeZone: 'UTC',
-  })
-  return `${dateStr}, ${formatTimeRange(start, end)}`
+  return `${formatDate(start)}, ${formatTimeRange(start, end)}`
 }
 
 /**
