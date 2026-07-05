@@ -65,6 +65,20 @@ function formatSessionDate(date: string): string {
     timeZone: "UTC",
   });
 }
+
+// ── New constants and functions ────────────────────────────────────────
+
+const attendeeFields: { label: string; key: 'fullName' | 'email' | 'phone' | 'company' | 'jobTitle' }[] = [
+  { label: 'Name', key: 'fullName' },
+  { label: 'Email', key: 'email' },
+  { label: 'Phone', key: 'phone' },
+  { label: 'Company', key: 'company' },
+  { label: 'Job Title', key: 'jobTitle' },
+];
+
+function formatAddonLabel(addon: { name: string; maxQuantity?: number }, sel: { quantity: number }): string {
+  return `${addon.name}${addon.maxQuantity !== undefined ? ` × ${sel.quantity}` : ''}`;
+}
 </script>
 
 <template>
@@ -124,86 +138,16 @@ function formatSessionDate(date: string): string {
           </button>
         </div>
 
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Name</span>
+        <div v-for="field in attendeeFields" :key="field.key" class="flex justify-between">
+          <span class="text-xs text-neutral-muted leading-4">{{ field.label }}</span>
           <span
             class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'fullName')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
+            :class="fieldHasError('attendeeInfo', field.key) ? 'text-danger-emphasis' : 'text-neutral'"
           >
-            {{
-              registration.attendeeInfo.fullName ||
-              (fieldHasError("attendeeInfo", "fullName") ? "— (required)" : "—")
-            }}
+            {{ registration.attendeeInfo[field.key] || (fieldHasError('attendeeInfo', field.key) ? '— (required)' : '—') }}
           </span>
         </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Email</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'email')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.email ||
-              (fieldHasError("attendeeInfo", "email") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Phone</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'phone')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.phone ||
-              (fieldHasError("attendeeInfo", "phone") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Company</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'company')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.company ||
-              (fieldHasError("attendeeInfo", "company") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Job Title</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'jobTitle')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.jobTitle ||
-              (fieldHasError("attendeeInfo", "jobTitle") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
+
         <div class="flex justify-between">
           <span class="text-xs text-neutral-muted leading-4">Ticket Type</span>
           <span
@@ -337,10 +281,7 @@ function formatSessionDate(date: string): string {
               ADDON_CATEGORY_LABELS[addon.category]
             }}</span>
             <span class="text-xs text-neutral leading-4">
-              {{ addon.name
-              }}{{
-                addon.maxQuantity !== undefined ? ` × ${sel.quantity}` : ""
-              }}
+              {{ formatAddonLabel(addon, sel) }}
               ({{ formatCurrency(addon.price) }})
             </span>
           </div>
@@ -381,8 +322,7 @@ function formatSessionDate(date: string): string {
           class="flex justify-between"
         >
           <span class="text-xs text-neutral-muted leading-4">
-            {{ addon.name
-            }}{{ addon.maxQuantity !== undefined ? ` × ${sel.quantity}` : "" }}
+            {{ formatAddonLabel(addon, sel) }}
           </span>
           <span class="text-xs text-neutral-muted leading-4">{{
             formatCurrency(addon.price * sel.quantity)
