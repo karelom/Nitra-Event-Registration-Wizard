@@ -34,6 +34,18 @@ export function formatWorkshopTime(start: string, end: string): string {
 }
 
 /**
+ * Formats an ISO UTC date to "Nov 15" style, month/day only.
+ * @example formatDate('2028-11-15T09:00:00Z') // 'Nov 15'
+ */
+export function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    timeZone: 'UTC',
+  })
+}
+
+/**
  * Formats a number as USD currency string.
  * @example formatCurrency(1234.5) // '$1,234.50'
  */

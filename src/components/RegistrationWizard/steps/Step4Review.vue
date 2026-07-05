@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
-import { fetchSessions } from "src/api/sessions";
+import { computed } from "vue";
 import { ADDON_CATEGORY_LABELS } from "src/api/addons";
-import type { Session } from "src/api/sessions";
 import { useRegistration, useValidation } from "src/stores/registration";
 import { useOrderSummary } from "src/composables/useOrderSummary";
-import { formatCurrency, formatTime } from "src/lib/utils";
+import { useSessions } from "src/composables/useSessions";
+import { formatCurrency, formatDate, formatTime } from "src/lib/utils";
 
 defineEmits<{
   "edit-step": [step: string];
@@ -14,17 +13,16 @@ defineEmits<{
 const registration = useRegistration();
 const { validationErrors, timeConflicts, stepErrors, fieldError } =
   useValidation();
-const { loading, currentTicket, selectedAddonDetails, timedAddonDiscount, orderTotal } = useOrderSummary();
+const {
+  loading: orderSummaryLoading,
+  currentTicket,
+  selectedAddonDetails,
+  timedAddonDiscount,
+  orderTotal,
+} = useOrderSummary();
+const { loading: sessionsLoading, selectedSessions } = useSessions();
 
-const sessions = ref<Session[]>([]);
-
-onMounted(async () => {
-  sessions.value = await fetchSessions();
-});
-
-const selectedSessions = computed(() =>
-  sessions.value.filter((s) => registration.selectedSessionIds.includes(s.id)),
-);
+const loading = computed(() => orderSummaryLoading.value || sessionsLoading.value);
 
 // ── Error helpers ────────────────────────────────────────────────
 
@@ -57,14 +55,6 @@ const bannerErrors = computed(() => [
   ...validationErrors.value.map(formatBannerError),
   ...timeConflicts.value.map((msg: string) => `Step 2: ${msg}`),
 ]);
-
-function formatSessionDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    timeZone: "UTC",
-  });
-}
 </script>
 
 <template>
@@ -278,7 +268,7 @@ function formatSessionDate(date: string): string {
             class="flex justify-between"
           >
             <span class="text-xs text-neutral-muted leading-4">
-              {{ formatSessionDate(session.date) }},
+              {{ formatDate(session.date) }},
               {{ formatTime(session.date) }}
             </span>
             <span class="text-xs text-neutral leading-4">{{
