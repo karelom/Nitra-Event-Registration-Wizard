@@ -6,6 +6,7 @@ import type { Session } from "src/api/sessions";
 import { useRegistration, useValidation } from "src/stores/registration";
 import { useOrderSummary } from "src/composables/useOrderSummary";
 import { formatCurrency, formatTime } from "src/lib/utils";
+import AttendeeInfoRow from "./AttendeeInfoRow.vue";
 
 defineEmits<{
   "edit-step": [step: string];
@@ -124,125 +125,67 @@ function formatSessionDate(date: string): string {
           </button>
         </div>
 
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Name</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'fullName')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.fullName ||
-              (fieldHasError("attendeeInfo", "fullName") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Email</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'email')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.email ||
-              (fieldHasError("attendeeInfo", "email") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Phone</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'phone')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.phone ||
-              (fieldHasError("attendeeInfo", "phone") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Company</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'company')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.company ||
-              (fieldHasError("attendeeInfo", "company") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Job Title</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'jobTitle')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.jobTitle ||
-              (fieldHasError("attendeeInfo", "jobTitle") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Ticket Type</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'ticketId')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              currentTicket
-                ? `${currentTicket.name} (${formatCurrency(currentTicket.price)})`
-                : fieldHasError("attendeeInfo", "ticketId")
-                  ? "— (required)"
-                  : "—"
-            }}
-          </span>
-        </div>
-        <div
+        <AttendeeInfoRow
+          label="Name"
+          :value="
+            registration.attendeeInfo.fullName ||
+            (fieldHasError('attendeeInfo', 'fullName') ? '— (required)' : '—')
+          "
+          :hasError="fieldHasError('attendeeInfo', 'fullName')"
+        />
+        <AttendeeInfoRow
+          label="Email"
+          :value="
+            registration.attendeeInfo.email ||
+            (fieldHasError('attendeeInfo', 'email') ? '— (required)' : '—')
+          "
+          :hasError="fieldHasError('attendeeInfo', 'email')"
+        />
+        <AttendeeInfoRow
+          label="Phone"
+          :value="
+            registration.attendeeInfo.phone ||
+            (fieldHasError('attendeeInfo', 'phone') ? '— (required)' : '—')
+          "
+          :hasError="fieldHasError('attendeeInfo', 'phone')"
+        />
+        <AttendeeInfoRow
+          label="Company"
+          :value="
+            registration.attendeeInfo.company ||
+            (fieldHasError('attendeeInfo', 'company') ? '— (required)' : '—')
+          "
+          :hasError="fieldHasError('attendeeInfo', 'company')"
+        />
+        <AttendeeInfoRow
+          label="Job Title"
+          :value="
+            registration.attendeeInfo.jobTitle ||
+            (fieldHasError('attendeeInfo', 'jobTitle') ? '— (required)' : '—')
+          "
+          :hasError="fieldHasError('attendeeInfo', 'jobTitle')"
+        />
+        <AttendeeInfoRow
+          label="Ticket Type"
+          :value="
+            currentTicket
+              ? `${currentTicket.name} (${formatCurrency(currentTicket.price)})`
+              : fieldHasError('attendeeInfo', 'ticketId')
+                ? '— (required)'
+                : '—'
+          "
+          :hasError="fieldHasError('attendeeInfo', 'ticketId')"
+        />
+        <AttendeeInfoRow
           v-if="
             registration.attendeeInfo.shippingAddress || fieldHasError('attendeeInfo', 'shippingAddress')
           "
-          class="flex justify-between"
-        >
-          <span class="text-xs text-neutral-muted leading-4"
-            >Shipping Address</span
-          >
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'shippingAddress')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{ registration.attendeeInfo.shippingAddress || "— (required for merchandise)" }}
-          </span>
-        </div>
+          label="Shipping Address"
+          :value="
+            registration.attendeeInfo.shippingAddress || '— (required for merchandise)'
+          "
+          :hasError="fieldHasError('attendeeInfo', 'shippingAddress')"
+        />
       </section>
 
       <!-- ── Selected Sessions ── -->
