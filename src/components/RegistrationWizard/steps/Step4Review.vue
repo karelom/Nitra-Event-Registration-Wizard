@@ -32,6 +32,48 @@ function fieldHasError(...path: string[]): boolean {
   return !!fieldError(...path);
 }
 
+function displayValue(value: string | undefined, hasError: boolean, requiredLabel = "— (required)"): string {
+  return value || (hasError ? requiredLabel : "—");
+}
+
+function sectionBorderClass(hasError: boolean): string {
+  return hasError
+    ? "border-2 border-solid border-danger-emphasis"
+    : "border border-solid border-neutral-muted";
+}
+
+function sectionTitleClass(hasError: boolean): string {
+  return hasError ? "text-danger-emphasis" : "text-neutral";
+}
+
+const attendeeFields = computed(() => {
+  const info = registration.attendeeInfo;
+  const fields = [
+    { label: "Name", error: fieldHasError("attendeeInfo", "fullName"), value: displayValue(info.fullName, fieldHasError("attendeeInfo", "fullName")) },
+    { label: "Email", error: fieldHasError("attendeeInfo", "email"), value: displayValue(info.email, fieldHasError("attendeeInfo", "email")) },
+    { label: "Phone", error: fieldHasError("attendeeInfo", "phone"), value: displayValue(info.phone, fieldHasError("attendeeInfo", "phone")) },
+    { label: "Company", error: fieldHasError("attendeeInfo", "company"), value: displayValue(info.company, fieldHasError("attendeeInfo", "company")) },
+    { label: "Job Title", error: fieldHasError("attendeeInfo", "jobTitle"), value: displayValue(info.jobTitle, fieldHasError("attendeeInfo", "jobTitle")) },
+    {
+      label: "Ticket Type",
+      error: fieldHasError("attendeeInfo", "ticketId"),
+      value: currentTicket.value
+        ? `${currentTicket.value.name} (${formatCurrency(currentTicket.value.price)})`
+        : displayValue(undefined, fieldHasError("attendeeInfo", "ticketId")),
+    },
+  ];
+
+  if (info.shippingAddress || fieldHasError("attendeeInfo", "shippingAddress")) {
+    fields.push({
+      label: "Shipping Address",
+      error: fieldHasError("attendeeInfo", "shippingAddress"),
+      value: displayValue(info.shippingAddress, true, "— (required for merchandise)"),
+    });
+  }
+
+  return fields;
+});
+
 const step2ErrorMessages = computed(() => [
   ...validationErrors.value
     .filter((e) => String(e.path?.[0]) === "selectedSessionIds")
@@ -101,19 +143,10 @@ function formatSessionDate(date: string): string {
       <!-- ── Attendee Information ── -->
       <section
         class="flex flex-col gap-3 p-5 rounded-md bg-surface-l2"
-        :class="
-          stepErrors.step1
-            ? 'border-2 border-solid border-danger-emphasis'
-            : 'border border-solid border-neutral-muted'
-        "
+        :class="sectionBorderClass(stepErrors.step1)"
       >
         <div class="flex justify-between items-center">
-          <h3
-            class="text-subtitle1 m-0"
-            :class="
-              stepErrors.step1 ? 'text-danger-emphasis' : 'text-neutral'
-            "
-          >
+          <h3 class="text-subtitle1 m-0" :class="sectionTitleClass(stepErrors.step1)">
             Attendee Information
           </h3>
           <button
@@ -124,123 +157,17 @@ function formatSessionDate(date: string): string {
           </button>
         </div>
 
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Name</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'fullName')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.fullName ||
-              (fieldHasError("attendeeInfo", "fullName") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Email</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'email')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.email ||
-              (fieldHasError("attendeeInfo", "email") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Phone</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'phone')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.phone ||
-              (fieldHasError("attendeeInfo", "phone") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Company</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'company')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.company ||
-              (fieldHasError("attendeeInfo", "company") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Job Title</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'jobTitle')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              registration.attendeeInfo.jobTitle ||
-              (fieldHasError("attendeeInfo", "jobTitle") ? "— (required)" : "—")
-            }}
-          </span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-xs text-neutral-muted leading-4">Ticket Type</span>
-          <span
-            class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'ticketId')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
-          >
-            {{
-              currentTicket
-                ? `${currentTicket.name} (${formatCurrency(currentTicket.price)})`
-                : fieldHasError("attendeeInfo", "ticketId")
-                  ? "— (required)"
-                  : "—"
-            }}
-          </span>
-        </div>
         <div
-          v-if="
-            registration.attendeeInfo.shippingAddress || fieldHasError('attendeeInfo', 'shippingAddress')
-          "
+          v-for="field in attendeeFields"
+          :key="field.label"
           class="flex justify-between"
         >
-          <span class="text-xs text-neutral-muted leading-4"
-            >Shipping Address</span
-          >
+          <span class="text-xs text-neutral-muted leading-4">{{ field.label }}</span>
           <span
             class="text-xs leading-4"
-            :class="
-              fieldHasError('attendeeInfo', 'shippingAddress')
-                ? 'text-danger-emphasis'
-                : 'text-neutral'
-            "
+            :class="field.error ? 'text-danger-emphasis' : 'text-neutral'"
           >
-            {{ registration.attendeeInfo.shippingAddress || "— (required for merchandise)" }}
+            {{ field.value }}
           </span>
         </div>
       </section>
@@ -248,19 +175,10 @@ function formatSessionDate(date: string): string {
       <!-- ── Selected Sessions ── -->
       <section
         class="flex flex-col gap-3 p-5 rounded-md bg-surface-l2"
-        :class="
-          stepErrors.step2
-            ? 'border-2 border-solid border-danger-emphasis'
-            : 'border border-solid border-neutral-muted'
-        "
+        :class="sectionBorderClass(stepErrors.step2)"
       >
         <div class="flex justify-between items-center">
-          <h3
-            class="text-subtitle1 m-0"
-            :class="
-              stepErrors.step2 ? 'text-danger-emphasis' : 'text-neutral'
-            "
-          >
+          <h3 class="text-subtitle1 m-0" :class="sectionTitleClass(stepErrors.step2)">
             Selected Sessions
           </h3>
           <button
@@ -304,19 +222,10 @@ function formatSessionDate(date: string): string {
       <!-- ── Add-ons ── -->
       <section
         class="flex flex-col gap-3 p-5 rounded-md bg-surface-l2"
-        :class="
-          stepErrors.step3
-            ? 'border-2 border-solid border-danger-emphasis'
-            : 'border border-solid border-neutral-muted'
-        "
+        :class="sectionBorderClass(stepErrors.step3)"
       >
         <div class="flex justify-between items-center">
-          <h3
-            class="text-subtitle1 m-0"
-            :class="
-              stepErrors.step3 ? 'text-danger-emphasis' : 'text-neutral'
-            "
-          >
+          <h3 class="text-subtitle1 m-0" :class="sectionTitleClass(stepErrors.step3)">
             Add-ons
           </h3>
           <button
